@@ -7,10 +7,8 @@ book:
   author: "Nikolaos Garanis"
   site-url: https://nyg.github.io/so3-graphics-support
   repo-url: https://github.com/nyg/so3-graphics-support
-  repo-branch: master
-  repo-actions: [edit]
   downloads: [pdf]
-  page-navigation: true
+  page-navigation: false
   sidebar:
     style: docked
   chapters:

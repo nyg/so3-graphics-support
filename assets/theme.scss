@@ -23,7 +23,7 @@ $web-font-path: "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600
 $font-family-sans-serif: $sans;
 $font-family-monospace: $mono;
 $headings-font-family: $sans;
-$font-size-root: 17px;
+$font-size-root: 16px;
 $line-height-base: 1.6;
 
 $body-bg: $paper;
@@ -67,12 +67,12 @@ body {
 main.content {
   font-family: $serif;
   font-size: 1.0625rem;
-  line-height: 1.72;
+  line-height: 1.62;
   font-optical-sizing: auto;
   font-variant-numeric: lining-nums;
 
   p {
-    margin-bottom: 1.1rem;
+    margin-bottom: 1rem;
   }
 
   a {
@@ -427,81 +427,6 @@ section.footnotes {
       opacity: 0.75;
     }
   }
-
-  .toc-actions a {
-    font-size: 0.8rem;
-    color: $ink-faint;
-  }
-}
-
-.page-navigation {
-  gap: 1rem;
-  margin-top: 4rem;
-  padding-top: 1.75rem;
-  border-top: 1px solid $rule;
-
-  .nav-page {
-    flex: 1 1 0;
-    max-width: 50%;
-  }
-
-  .nav-page-next {
-    text-align: right;
-  }
-
-  .pagination-link {
-    display: flex;
-    align-items: center;
-    gap: 0.6rem;
-    padding: 0.85rem 1.1rem;
-    background: $surface;
-    border: 1px solid $rule;
-    border-radius: 8px;
-    color: $ink;
-    font-family: $sans;
-    transition: border-color 0.15s ease;
-
-    &:hover {
-      border-color: $accent;
-      color: $ink-strong;
-    }
-
-    .bi {
-      font-size: 1.2rem;
-      color: $ink-faint;
-    }
-  }
-
-  .nav-page-next .pagination-link {
-    justify-content: flex-end;
-  }
-
-  .nav-page-text {
-    font-size: 0.92rem;
-    font-weight: 500;
-
-    &::before {
-      display: block;
-      margin-bottom: 0.15rem;
-      font-size: 0.68rem;
-      font-weight: 600;
-      letter-spacing: 0.12em;
-      text-transform: uppercase;
-      color: $ink-faint;
-    }
-
-    .chapter-number {
-      color: $ink-faint;
-    }
-  }
-
-  .nav-page-previous .nav-page-text::before {
-    content: "Previous";
-  }
-
-  .nav-page-next .nav-page-text::before {
-    content: "Next";
-  }
 }
 
 .nav-footer {
@@ -519,7 +444,8 @@ section.footnotes {
   }
 
   main.content {
-    font-size: 1.03rem;
+    font-size: 1rem;
+    line-height: 1.6;
   }
 }
 
@@ -539,10 +465,6 @@ main.content div:has(> table) {
 #quarto-margin-sidebar #TOC {
   padding-left: 1rem;
   border-left: 1px solid $rule;
-}
-
-#quarto-margin-sidebar .toc-actions {
-  padding-left: 1rem;
 }
 
 #title-block-header {
@@ -577,14 +499,10 @@ main.content table thead th {
   background: $panel;
 }
 
-.page-navigation {
-  border-top-color: $rule-strong;
-}
-
 @media (min-width: 992px) {
   main.content {
     width: 100%;
-    max-width: 44rem;
+    max-width: 41rem;
     justify-self: center;
   }
 
