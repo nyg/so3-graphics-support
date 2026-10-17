@@ -17,6 +17,9 @@ book:
     - 02-gui.qmd
     - 03-so3.qmd
     - 04-soo.qmd
+    - 05-conclusion.qmd
+  appendices:
+    - a1-specification.qmd
 
 lang: en
 preserve-tabs: true

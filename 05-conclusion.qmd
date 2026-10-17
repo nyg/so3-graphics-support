@@ -1,0 +1,9 @@
+# Conclusion {#sec-conclusion}
+
+Adding graphics support to SO3 called for research at several levels of operating system development. It started with understanding what a device controller is and what it does, which led to drivers that let the controllers and the operating system talk to each other. Writing these drivers required a range of skills, from how a framebuffer works to how the PS/2 protocol is used to talk to a mouse and a keyboard. The work then moved from the kernel to user space, with changes to system calls, the integration of a library, and an application that uses it.
+
+A lot was also learned about the components of SOO, such as the AVZ hypervisor, shared rings, VBStore, and backend and frontend drivers, along with a basic understanding of how Linux drivers work. This thesis was also an introduction to embedded systems and the many possibilities they offer.
+
+More work is still needed before a user can interact with a Raspberry Pi 4 through a touchscreen alone. USB support must be implemented, and touch events must be tested in real conditions. The SOO.refso3 ME could also be improved in various ways, for example with a more robust keyboard driver that supports both UTF-8 characters and keyboard shortcuts defined by the application.
+
+Finally, real applications remain to be written, in areas such as home automation, collaborative displays or drone control. For this, the ME developed so far must actually migrate, and interact with other MEs.
