@@ -11,9 +11,6 @@ book:
   repo-actions: [edit]
   downloads: [pdf]
   page-navigation: true
-  sidebar:
-    style: docked
-    search: true
   chapters:
     - index.qmd
     - 01-introduction.qmd
@@ -26,17 +23,9 @@ fig-align: center
 
 format:
   html:
-    theme: [cosmo, assets/gitbook.scss]
-    grid:
-      sidebar-width: 300px
-      body-width: 800px
-      margin-width: 0px
-      gutter-width: 2rem
-    toc: false
-    highlight-style: github
-    code-block-bg: true
+    theme: [cosmo, assets/hopr.scss]
+    toc: true
     link-external-newwindow: true
-    include-after-body: assets/gitbook.html
   typst:
     papersize: a4
     margin:

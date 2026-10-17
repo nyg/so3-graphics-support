@@ -1,0 +1,43 @@
+/*-- scss:defaults --*/
+
+$web-font-path: "https://fonts.googleapis.com/css2?family=Source+Sans+Pro:wght@300;400;700&display=swap";
+$font-family-sans-serif: "Source Sans Pro", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+$font-size-root: 18px;
+$body-color: #373a3c;
+$link-color: #2780e3;
+$headings-font-weight: 400;
+$h2-font-size: 1.75rem;
+$h3-font-size: 1.5rem;
+$code-color: #9954bb;
+$code-bg: #f7f7f7;
+$sidebar-fg: #595959;
+$sidebar-hl: #1b589d;
+
+/*-- scss:rules --*/
+
+@if $web-font-path {
+  @import url($web-font-path);
+}
+
+h1, h2, h3, h4, h5, h6,
+.h1, .h2, .h3, .h4, .h5, .h6,
+h1.title {
+  font-weight: 400;
+}
+
+h1.title {
+  font-size: 2.2rem;
+}
+
+.sidebar-title {
+  color: #595959;
+}
+
+div.sourceCode {
+  border-radius: 0.25rem;
+}
+
+figcaption {
+  font-size: 1rem;
+  color: #747a7f;
+}
