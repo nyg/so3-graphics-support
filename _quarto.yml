@@ -11,6 +11,8 @@ book:
   repo-actions: [edit]
   downloads: [pdf]
   page-navigation: true
+  sidebar:
+    style: docked
   chapters:
     - index.qmd
     - 01-introduction.qmd

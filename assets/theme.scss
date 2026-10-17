@@ -1,16 +1,18 @@
 /*-- scss:defaults --*/
 
-$paper: #fbfaf7;
+$paper: #fdfcf9;
+$panel: #f3f0e9;
 $surface: #ffffff;
 $ink: #23262b;
 $ink-strong: #15171a;
 $ink-soft: #5b6169;
 $ink-faint: #8a9098;
-$rule: #e6e2d9;
+$rule: #e2ddd2;
+$rule-strong: #d6cfc1;
 $accent: #2b6cb0;
 $accent-soft: #eaf2fb;
-$code-surface: #f5f3ee;
-$code-rule: #e9e5dc;
+$code-surface: #f3f0e9;
+$code-rule: #e2ddd2;
 
 $serif: "Source Serif 4", "Source Serif Pro", Georgia, "Times New Roman", serif;
 $sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
@@ -42,7 +44,7 @@ $code-bg: $code-surface;
 $code-block-bg: $code-surface;
 $code-block-border-left: false;
 
-$sidebar-bg: $paper;
+$sidebar-bg: $panel;
 $sidebar-fg: $ink-soft;
 $sidebar-hl: $accent;
 $toc-active-border: $accent;
@@ -528,4 +530,72 @@ code, pre, kbd, samp {
 
 main.content div:has(> table) {
   overflow-x: auto;
+}
+
+#quarto-sidebar.docked {
+  border-right: 1px solid $rule-strong;
+}
+
+#quarto-margin-sidebar #TOC {
+  padding-left: 1rem;
+  border-left: 1px solid $rule;
+}
+
+#quarto-margin-sidebar .toc-actions {
+  padding-left: 1rem;
+}
+
+#title-block-header {
+  border-bottom-color: $rule-strong;
+}
+
+main.content section.level2 + section.level2 > h2,
+main.content section.level2 > h2 {
+  margin-top: 3.5rem;
+  padding-top: 2.25rem;
+  border-top: 1px solid $rule;
+}
+
+main.content > section.level2:first-of-type > h2,
+#title-block-header + section.level2 > h2 {
+  margin-top: 0;
+  padding-top: 0;
+  border-top: 0;
+}
+
+main.content figure > div:has(> img),
+main.content figure > p:has(> img) {
+  margin: 0;
+  padding: 1.25rem;
+  background: $surface;
+  border: 1px solid $rule;
+  border-radius: 10px;
+  text-align: center;
+}
+
+main.content table thead th {
+  background: $panel;
+}
+
+.page-navigation {
+  border-top-color: $rule-strong;
+}
+
+@media (min-width: 992px) {
+  main.content {
+    width: 100%;
+    max-width: 44rem;
+    justify-self: center;
+  }
+
+  #quarto-sidebar.docked {
+    padding: 1.5rem 0.75rem 0 1.4rem;
+  }
+}
+
+@media (max-width: 767.98px) {
+  main.content figure > div:has(> img),
+  main.content figure > p:has(> img) {
+    padding: 0.6rem;
+  }
 }
