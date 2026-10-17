@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 860 250" width="860" height="250" role="img" aria-labelledby="t">
+  <title id="t">Input events travel from the Linux drivers to the vinput backend</title>
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#5c6b77"/>
+    </marker>
+  </defs>
+  <style>
+    text { font-family: "Helvetica Neue", Helvetica, Arial, sans-serif; font-size: 14px; fill: #333; text-anchor: middle; }
+    .area { font-size: 12px; fill: #7e888b; letter-spacing: 0.08em; }
+    .bold { font-weight: bold; }
+    .mono { font-family: Menlo, Consolas, "Liberation Mono", monospace; font-size: 12px; }
+    .muted { fill: #7e888b; }
+    .divider { stroke: #b8c0c7; stroke-width: 1; stroke-dasharray: 6 4; }
+    .node { fill: #fff; stroke: #5c6b77; stroke-width: 1.5; }
+    .node-new { fill: #eaf2fb; stroke: #4183c4; stroke-width: 1.5; }
+    .other { fill: #fff; stroke: #9aa5ae; stroke-width: 1.5; stroke-dasharray: 5 4; }
+    .edge { stroke: #5c6b77; stroke-width: 1.5; fill: none; }
+  </style>
+
+  <text class="area" x="245" y="30">LINUX</text>
+  <line class="divider" x1="530" y1="16" x2="530" y2="236"/>
+  <text class="area" x="715" y="30">SOO</text>
+
+  <rect class="node" x="30" y="56" width="150" height="44" rx="8"/>
+  <text x="105" y="83">Keyboard driver</text>
+  <rect class="node" x="30" y="116" width="150" height="44" rx="8"/>
+  <text x="105" y="143">Mouse driver</text>
+  <rect class="other" x="30" y="176" width="150" height="44" rx="8"/>
+  <text class="muted" x="105" y="203">…</text>
+
+  <rect class="node" x="290" y="66" width="170" height="144" rx="8"/>
+  <text class="bold" x="375" y="132">input.c</text>
+  <text class="mono" x="375" y="152">input_event</text>
+
+  <path class="edge" d="M180,78 C235,78 240,132 288,138" marker-end="url(#arrow)"/>
+  <path class="edge" d="M180,138 H288" marker-end="url(#arrow)"/>
+  <path class="edge" d="M180,198 C235,198 240,144 288,138" marker-end="url(#arrow)"/>
+
+  <rect class="node-new" x="600" y="110" width="230" height="56" rx="8"/>
+  <text class="bold" x="715" y="133">vinputback/vinput.c</text>
+  <text class="mono" x="715" y="153">vinput_pass_event</text>
+
+  <path class="edge" d="M460,138 H598" marker-end="url(#arrow)"/>
+</svg>
