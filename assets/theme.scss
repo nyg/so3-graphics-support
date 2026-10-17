@@ -1,0 +1,531 @@
+/*-- scss:defaults --*/
+
+$paper: #fbfaf7;
+$surface: #ffffff;
+$ink: #23262b;
+$ink-strong: #15171a;
+$ink-soft: #5b6169;
+$ink-faint: #8a9098;
+$rule: #e6e2d9;
+$accent: #2b6cb0;
+$accent-soft: #eaf2fb;
+$code-surface: #f5f3ee;
+$code-rule: #e9e5dc;
+
+$serif: "Source Serif 4", "Source Serif Pro", Georgia, "Times New Roman", serif;
+$sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+$mono: "JetBrains Mono", "SFMono-Regular", Menlo, Consolas, "Liberation Mono", monospace;
+
+$web-font-path: "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&display=swap";
+
+$font-family-sans-serif: $sans;
+$font-family-monospace: $mono;
+$headings-font-family: $sans;
+$font-size-root: 17px;
+$line-height-base: 1.6;
+
+$body-bg: $paper;
+$body-color: $ink;
+$link-color: $accent;
+$link-decoration: none;
+$border-color: $rule;
+$table-border-color: $rule;
+
+$headings-color: $ink-strong;
+$headings-font-weight: 600;
+$h2-font-size: 1.55rem;
+$h3-font-size: 1.25rem;
+$h4-font-size: 1.05rem;
+
+$code-color: $ink;
+$code-bg: $code-surface;
+$code-block-bg: $code-surface;
+$code-block-border-left: false;
+
+$sidebar-bg: $paper;
+$sidebar-fg: $ink-soft;
+$sidebar-hl: $accent;
+$toc-active-border: $accent;
+$toc-inactive-border: $rule;
+
+/*-- scss:rules --*/
+
+@import url($web-font-path);
+
+::selection {
+  background: $accent-soft;
+}
+
+body {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+main.content {
+  font-family: $serif;
+  font-size: 1.0625rem;
+  line-height: 1.72;
+  font-optical-sizing: auto;
+  font-variant-numeric: lining-nums;
+
+  p {
+    margin-bottom: 1.1rem;
+  }
+
+  a {
+    text-decoration: underline;
+    text-decoration-color: rgba($accent, 0.35);
+    text-decoration-thickness: 1px;
+    text-underline-offset: 0.18em;
+
+    &:hover {
+      text-decoration-color: $accent;
+    }
+  }
+
+  a.quarto-xref,
+  a.footnote-ref,
+  a.anchorjs-link,
+  .sourceCode a {
+    text-decoration: none;
+  }
+
+  ul, ol {
+    padding-left: 1.4rem;
+  }
+
+  li {
+    margin-bottom: 0.35rem;
+
+    &::marker {
+      color: $ink-faint;
+    }
+  }
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: $sans;
+  letter-spacing: -0.012em;
+}
+
+main.content {
+  h2 {
+    margin-top: 3.25rem;
+    margin-bottom: 1rem;
+    padding-bottom: 0;
+    border-bottom: 0;
+    font-weight: 650;
+    letter-spacing: -0.02em;
+  }
+
+  h3 {
+    margin-top: 2.5rem;
+    margin-bottom: 0.85rem;
+  }
+
+  h4 {
+    margin-top: 2rem;
+    margin-bottom: 0.6rem;
+  }
+
+  h5 {
+    margin-top: 1.6rem;
+    margin-bottom: 0.4rem;
+    font-size: 0.8rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: $ink-soft;
+  }
+
+  .header-section-number {
+    margin-right: 0.45em;
+    font-weight: 500;
+    color: $ink-faint;
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+#title-block-header {
+  margin: 1.5rem 0 2.75rem;
+  padding-bottom: 1.75rem;
+  border-bottom: 1px solid $rule;
+
+  h1.title {
+    font-family: $sans;
+    font-size: 2.55rem;
+    font-weight: 650;
+    line-height: 1.12;
+    letter-spacing: -0.028em;
+    color: $ink-strong;
+  }
+
+  .quarto-section-identifier:has(.chapter-number) {
+    font-size: 0;
+
+    .chapter-number {
+      display: block;
+      margin-bottom: 0.85rem;
+      font-size: 0.78rem;
+      font-weight: 600;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: $accent;
+
+      &::before {
+        content: "Chapter ";
+      }
+    }
+
+    .chapter-title {
+      font-size: 2.55rem;
+    }
+  }
+
+  .quarto-title-meta {
+    margin-top: 1.25rem;
+  }
+
+  .quarto-title-meta-heading {
+    font-family: $sans;
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: $ink-faint;
+  }
+
+  .quarto-title-meta-contents {
+    font-family: $serif;
+    font-variant-numeric: lining-nums;
+    font-size: 1.05rem;
+    color: $ink;
+  }
+}
+
+main.content :not(pre) > code:not(.sourceCode) {
+  padding: 0.12em 0.36em;
+  font-size: 0.82em;
+  color: $ink;
+  background: $code-surface;
+  border: 1px solid $code-rule;
+  border-radius: 4px;
+  white-space: break-spaces;
+}
+
+main.content h1 code,
+main.content h2 code,
+main.content h3 code,
+main.content h4 code {
+  font-size: 0.85em;
+  border: 0;
+  background: transparent;
+  padding: 0;
+}
+
+div.sourceCode {
+  margin: 1.4rem 0 1.6rem;
+  background: $code-surface;
+  border: 1px solid $code-rule;
+  border-radius: 8px;
+}
+
+div.sourceCode pre.sourceCode,
+main.content pre {
+  padding: 1rem 1.2rem;
+  font-size: 0.8rem;
+  line-height: 1.65;
+  tab-size: 4;
+}
+
+div.sourceCode code span {
+  &.kw, &.cf, &.pp, &.im { color: #8e3a8a; }
+  &.dt, &.bu { color: $accent; }
+  &.st, &.ch, &.ss, &.vs { color: #4b7b28; }
+  &.dv, &.fl, &.bn, &.cn { color: #b2531a; }
+  &.co, &.cv, &.do, &.an { color: $ink-faint; font-style: italic; }
+  &.fu { color: #1f5e8c; }
+  &.op, &.va, &.ot, &.at { color: $ink; }
+  &.er { color: $ink; text-decoration: none; }
+}
+
+main.content figure,
+main.content .quarto-float {
+  margin: 2.25rem 0;
+}
+
+main.content figure img {
+  max-width: 100%;
+}
+
+main.content figcaption,
+main.content .quarto-float-caption {
+  max-width: 34rem;
+  margin: 0.9rem auto 0;
+  font-family: $sans;
+  font-size: 0.82rem;
+  line-height: 1.55;
+  color: $ink-soft;
+  text-align: center;
+}
+
+main.content .quarto-float-caption-top {
+  margin: 0 auto 0.75rem;
+}
+
+main.content table {
+  font-family: $sans;
+  font-size: 0.85rem;
+  border-top: 1.5px solid $ink;
+  border-bottom: 1.5px solid $ink;
+
+  thead th {
+    padding: 0.6rem 0.75rem;
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    color: $ink-soft;
+    border-bottom: 1px solid $ink;
+    vertical-align: bottom;
+  }
+
+  th, td {
+    border-width: 0 0 1px;
+  }
+
+  td {
+    padding: 0.55rem 0.75rem;
+    border-color: $rule;
+    background: transparent;
+
+    code:not(.sourceCode) {
+      padding: 0;
+      background: transparent;
+      border: 0;
+      font-size: 0.92em;
+      color: $ink-soft;
+    }
+  }
+
+  tbody tr:last-child td {
+    border-bottom: 0;
+  }
+}
+
+section.footnotes {
+  margin-top: 3rem;
+  padding-top: 1rem;
+  border-top: 1px solid $rule;
+  font-family: $sans;
+  font-size: 0.8rem;
+  line-height: 1.5;
+  color: $ink-soft;
+
+  hr {
+    display: none;
+  }
+
+  li {
+    margin-bottom: 0.3rem;
+  }
+
+  li p {
+    margin: 0;
+  }
+
+  a {
+    word-break: break-word;
+  }
+}
+
+#quarto-sidebar {
+  font-family: $sans;
+
+  .sidebar-title a {
+    font-family: $serif;
+    font-size: 1.2rem;
+    font-weight: 600;
+    line-height: 1.3;
+    letter-spacing: -0.005em;
+    font-variant-numeric: lining-nums;
+    color: $ink-strong;
+  }
+
+  .sidebar-item .sidebar-link {
+    padding: 0.32rem 0;
+    font-size: 0.86rem;
+    line-height: 1.4;
+    color: $ink-soft;
+
+    &:hover {
+      color: $ink-strong;
+    }
+  }
+
+  .sidebar-link.active {
+    font-weight: 600;
+    color: $accent;
+  }
+
+  .chapter-number {
+    display: inline-block;
+    min-width: 1.1rem;
+    font-variant-numeric: tabular-nums;
+    color: $ink-faint;
+  }
+
+  .sidebar-link.active .chapter-number {
+    color: $accent;
+  }
+
+  .sidebar-item-section > .sidebar-item-container > .sidebar-item-text {
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: $ink-faint;
+  }
+}
+
+#quarto-search .aa-Form {
+  background: $surface;
+  border: 1px solid $rule;
+  border-radius: 6px;
+}
+
+#quarto-margin-sidebar {
+  font-family: $sans;
+
+  #toc-title {
+    margin-bottom: 0.6rem;
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: $ink-faint;
+  }
+
+  #TOC a.nav-link {
+    font-size: 0.8rem;
+    line-height: 1.4;
+    color: $ink-faint;
+
+    &:hover {
+      color: $ink-strong;
+    }
+
+    &.active {
+      color: $accent;
+    }
+
+    .header-section-number {
+      color: inherit;
+      opacity: 0.75;
+    }
+  }
+
+  .toc-actions a {
+    font-size: 0.8rem;
+    color: $ink-faint;
+  }
+}
+
+.page-navigation {
+  gap: 1rem;
+  margin-top: 4rem;
+  padding-top: 1.75rem;
+  border-top: 1px solid $rule;
+
+  .nav-page {
+    flex: 1 1 0;
+    max-width: 50%;
+  }
+
+  .nav-page-next {
+    text-align: right;
+  }
+
+  .pagination-link {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.85rem 1.1rem;
+    background: $surface;
+    border: 1px solid $rule;
+    border-radius: 8px;
+    color: $ink;
+    font-family: $sans;
+    transition: border-color 0.15s ease;
+
+    &:hover {
+      border-color: $accent;
+      color: $ink-strong;
+    }
+
+    .bi {
+      font-size: 1.2rem;
+      color: $ink-faint;
+    }
+  }
+
+  .nav-page-next .pagination-link {
+    justify-content: flex-end;
+  }
+
+  .nav-page-text {
+    font-size: 0.92rem;
+    font-weight: 500;
+
+    &::before {
+      display: block;
+      margin-bottom: 0.15rem;
+      font-size: 0.68rem;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: $ink-faint;
+    }
+
+    .chapter-number {
+      color: $ink-faint;
+    }
+  }
+
+  .nav-page-previous .nav-page-text::before {
+    content: "Previous";
+  }
+
+  .nav-page-next .nav-page-text::before {
+    content: "Next";
+  }
+}
+
+.nav-footer {
+  font-family: $sans;
+  font-size: 0.8rem;
+  color: $ink-faint;
+}
+
+@media (max-width: 767.98px) {
+  #title-block-header {
+    h1.title,
+    .quarto-section-identifier:has(.chapter-number) .chapter-title {
+      font-size: 2rem;
+    }
+  }
+
+  main.content {
+    font-size: 1.03rem;
+  }
+}
+
+code, pre, kbd, samp {
+  font-variant-ligatures: none;
+  font-feature-settings: "liga" 0, "calt" 0;
+}
+
+main.content div:has(> table) {
+  overflow-x: auto;
+}

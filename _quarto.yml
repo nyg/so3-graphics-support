@@ -28,8 +28,14 @@ fig-align: center
 
 format:
   html:
-    theme: [cosmo, assets/hopr.scss]
+    theme: assets/theme.scss
+    grid:
+      sidebar-width: 270px
+      body-width: 720px
+      margin-width: 230px
+      gutter-width: 2.5rem
     toc: true
+    toc-depth: 3
     link-external-newwindow: true
   typst:
     papersize: a4
