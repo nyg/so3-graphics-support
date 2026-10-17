@@ -1,0 +1,53 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 860 290" width="860" height="290" role="img" aria-labelledby="t">
+  <title id="t">A LittlevGL application and how it interacts with SO3</title>
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#5c6b77"/>
+    </marker>
+  </defs>
+  <style>
+    text { font-family: "Helvetica Neue", Helvetica, Arial, sans-serif; font-size: 14px; fill: #333; text-anchor: middle; }
+    .area { font-size: 12px; fill: #7e888b; letter-spacing: 0.08em; }
+    .title { font-weight: bold; text-anchor: start; }
+    .bold { font-weight: bold; }
+    .system { fill: #fafafa; stroke: #d5dbe0; }
+    .divider { stroke: #b8c0c7; stroke-width: 1; stroke-dasharray: 6 4; }
+    .node { fill: #fff; stroke: #5c6b77; stroke-width: 1.5; }
+    .node-lv { fill: #eaf2fb; stroke: #4183c4; stroke-width: 1.5; }
+    .edge { stroke: #5c6b77; stroke-width: 1.5; fill: none; }
+  </style>
+
+  <text class="area" x="110" y="62">HARDWARE</text>
+  <rect class="node" x="20" y="92" width="180" height="48" rx="8"/>
+  <text x="110" y="121">Display</text>
+  <rect class="node" x="20" y="172" width="180" height="48" rx="8"/>
+  <text x="110" y="192">Keyboard, mouse,</text>
+  <text x="110" y="210">touchscreen</text>
+
+  <rect class="system" x="236" y="16" width="608" height="258" rx="10"/>
+  <text class="title" x="252" y="40">SO3</text>
+  <text class="area" x="360" y="62">KERNEL</text>
+  <line class="divider" x1="482" y1="48" x2="482" y2="258"/>
+  <text class="area" x="663" y="62">USER SPACE</text>
+
+  <rect class="node" x="270" y="92" width="180" height="48" rx="8"/>
+  <text x="360" y="121">Framebuffer driver</text>
+  <rect class="node" x="270" y="172" width="180" height="48" rx="8"/>
+  <text x="360" y="201">Input drivers</text>
+
+  <rect class="node-lv" x="512" y="92" width="120" height="48" rx="8"/>
+  <text x="572" y="121">LittlevGL</text>
+  <rect class="node" x="512" y="172" width="120" height="48" rx="8"/>
+  <text x="572" y="201">libc</text>
+
+  <rect class="node-lv" x="676" y="88" width="146" height="136" rx="8"/>
+  <text class="bold" x="749" y="152">LittlevGL</text>
+  <text class="bold" x="749" y="170">application</text>
+
+  <path class="edge" d="M270,116 H202" marker-end="url(#arrow)"/>
+  <path class="edge" d="M200,196 H268" marker-end="url(#arrow)"/>
+  <path class="edge" d="M512,196 H452" marker-start="url(#arrow)" marker-end="url(#arrow)"/>
+  <path class="edge" d="M572,172 V156 H466 V116 H452" marker-end="url(#arrow)"/>
+  <path class="edge" d="M676,116 H634" marker-end="url(#arrow)"/>
+  <path class="edge" d="M676,196 H634" marker-end="url(#arrow)"/>
+</svg>

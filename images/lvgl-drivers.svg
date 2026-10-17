@@ -1,0 +1,57 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 860 370" width="860" height="370" role="img" aria-labelledby="t">
+  <title id="t">LittlevGL's drivers and how they reach the SO3 kernel</title>
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#5c6b77"/>
+    </marker>
+  </defs>
+  <style>
+    text { font-family: "Helvetica Neue", Helvetica, Arial, sans-serif; font-size: 14px; fill: #333; text-anchor: middle; }
+    .area { font-size: 12px; fill: #7e888b; letter-spacing: 0.08em; }
+    .bold { font-weight: bold; }
+    .mono { font-family: Menlo, Consolas, "Liberation Mono", monospace; font-size: 12px; fill: #5c6b77; }
+    .divider { stroke: #b8c0c7; stroke-width: 1; stroke-dasharray: 6 4; }
+    .libc { fill: #f1f3f5; stroke: #d5dbe0; }
+    .app { fill: #f3f8fd; stroke: #b7d0ea; }
+    .node { fill: #fff; stroke: #5c6b77; stroke-width: 1.5; }
+    .node-lv { fill: #eaf2fb; stroke: #4183c4; stroke-width: 1.5; }
+    .edge { stroke: #5c6b77; stroke-width: 1.5; fill: none; }
+  </style>
+
+  <text class="area" x="120" y="40">KERNEL</text>
+  <line class="divider" x1="252" y1="24" x2="252" y2="352"/>
+  <text class="area" x="556" y="40">USER SPACE</text>
+
+  <rect class="node" x="20" y="110" width="200" height="40" rx="8"/>
+  <text x="120" y="135">Framebuffer driver</text>
+  <rect class="node" x="20" y="170" width="200" height="40" rx="8"/>
+  <text x="120" y="195">Mouse driver</text>
+  <rect class="node" x="20" y="230" width="200" height="40" rx="8"/>
+  <text x="120" y="255">Keyboard driver</text>
+  <rect class="node" x="20" y="290" width="200" height="40" rx="8"/>
+  <text x="120" y="315">Virtual file system</text>
+
+  <rect class="libc" x="286" y="60" width="120" height="290" rx="8"/>
+  <text class="bold" x="346" y="84">libc</text>
+  <text class="mono" x="346" y="102">open, mmap,</text>
+  <text class="mono" x="346" y="117">ioctl, …</text>
+
+  <rect class="app" x="446" y="60" width="394" height="290" rx="8"/>
+  <text class="bold" x="643" y="84">LittlevGL application</text>
+  <rect class="node-lv" x="476" y="110" width="210" height="40" rx="8"/>
+  <text x="581" y="135">Display driver</text>
+  <rect class="node-lv" x="476" y="170" width="210" height="40" rx="8"/>
+  <text x="581" y="195">Input driver (mouse)</text>
+  <rect class="node-lv" x="476" y="230" width="210" height="40" rx="8"/>
+  <text x="581" y="255">Input driver (keyboard)</text>
+  <rect class="node-lv" x="476" y="290" width="210" height="40" rx="8"/>
+  <text x="581" y="315">File system driver</text>
+
+  <path class="edge" d="M476,130 H406 M286,130 H222" marker-end="url(#arrow)"/>
+  <path class="edge" d="M474,190 H406 M286,190 H222" marker-start="url(#arrow)" marker-end="url(#arrow)"/>
+  <path class="edge" d="M474,250 H406 M286,250 H222" marker-start="url(#arrow)" marker-end="url(#arrow)"/>
+  <path class="edge" d="M474,310 H406 M286,310 H222" marker-start="url(#arrow)" marker-end="url(#arrow)"/>
+
+  <path class="edge" d="M686,190 H730 M686,250 H730 M686,310 H730 V130"/>
+  <path class="edge" d="M730,130 H688" marker-end="url(#arrow)"/>
+</svg>

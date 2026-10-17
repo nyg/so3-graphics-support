@@ -1,0 +1,15 @@
+# Introduction {#sec-introduction}
+
+The REDS institute[^reds] at HEIG-VD has developed *Smart Object Oriented* (SOO) technology,[^soo] which lets running environments migrate across a set of interconnected embedded systems. In this context, a *Smart Object* is an embedded system such as a Raspberry Pi 4, and a *Mobile Entity* (ME) is the running environment that migrates between them.
+
+SOO is a framework built around the Linux kernel and a hypervisor based on the virtualization concepts of Xen, adapted to embedded systems. A Mobile Entity is an operating system (OS) virtualized by this hypervisor. It is for this purpose that REDS wrote SO3[^so3-repo] (*Smart Object Oriented Operating system*) from scratch: a lightweight OS that is easy to modify.
+
+One of the main targets of SOO is home automation, the use of computing to control the installations of a building. Letting an ME show a graphical user interface (GUI), on a touchscreen for example, opens the door to many kinds of applications. With such an interface, users could view the data an ME manages, such as weather readings, and also interact with it, for example to change settings or to view the data in another form.
+
+The goal of this thesis is therefore to add graphics support to SO3. This means choosing an existing graphics library and integrating it into SO3, rather than writing one from scratch. The work happens in two stages. The first is to support graphics when SO3 runs on its own, outside the SOO framework. Input devices such as the keyboard and the mouse must be supported too, so that users can interact with the GUI.
+
+The second stage is to make this GUI work inside an ME based on the modified SO3. When the ME is virtualized, only SOO talks to the hardware, never the ME itself. For the ME to reach the hardware anyway, virtual interfaces must be implemented, one to display the GUI and one to support input devices. Development starts in an emulated environment (QEMU) and is then adapted to run on a Raspberry Pi 4.
+
+[^reds]: Reconfigurable & Embedded Digital Systems.
+[^soo]: <https://blog.reds.ch/?p=1020> and <https://github.com/smartobjectoriented/soo>
+[^so3-repo]: <https://github.com/smartobjectoriented/so3>

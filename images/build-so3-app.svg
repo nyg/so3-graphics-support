@@ -1,0 +1,63 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 824 308" width="824" height="308" role="img" aria-labelledby="t">
+  <title id="t">Building an SO3 application</title>
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#5c6b77"/>
+    </marker>
+  </defs>
+  <style>
+    text { font-family: "Helvetica Neue", Helvetica, Arial, sans-serif; font-size: 14px; fill: #333; text-anchor: middle; }
+    .mono { font-family: Menlo, Consolas, "Liberation Mono", monospace; font-size: 13px; }
+    .group { fill: #fafafa; stroke: #d5dbe0; }
+    .group-lv { fill: #f3f8fd; stroke: #b7d0ea; }
+    .group-label { text-anchor: start; fill: #5c6b77; }
+    .node { fill: #fff; stroke: #5c6b77; stroke-width: 1.5; }
+    .node-lv { fill: #eaf2fb; stroke: #4183c4; stroke-width: 1.5; }
+    .edge { stroke: #5c6b77; stroke-width: 1.5; fill: none; }
+    .tool { font-size: 12px; fill: #7e888b; }
+  </style>
+
+  <rect class="group" x="16" y="16" width="486" height="84" rx="8"/>
+  <text class="mono group-label" x="32" y="38">usr/src/</text>
+  <rect class="node" x="40" y="52" width="100" height="36" rx="18"/>
+  <text class="mono" x="90" y="75">demo.c</text>
+  <path class="edge" d="M140,70 H208" marker-end="url(#arrow)"/>
+  <text class="tool" x="174" y="63">gcc</text>
+  <rect class="node" x="210" y="52" width="100" height="36" rx="18"/>
+  <text class="mono" x="260" y="75">demo.o</text>
+
+  <rect class="group" x="16" y="112" width="486" height="84" rx="8"/>
+  <text class="mono group-label" x="32" y="134">usr/libc/</text>
+  <rect class="node" x="40" y="148" width="100" height="36" rx="18"/>
+  <text class="mono" x="90" y="171">*.c</text>
+  <path class="edge" d="M140,166 H208" marker-end="url(#arrow)"/>
+  <text class="tool" x="174" y="159">gcc</text>
+  <rect class="node" x="210" y="148" width="100" height="36" rx="18"/>
+  <text class="mono" x="260" y="171">*.o</text>
+  <path class="edge" d="M310,166 H378" marker-end="url(#arrow)"/>
+  <text class="tool" x="344" y="159">ar</text>
+  <rect class="node" x="380" y="148" width="104" height="36" rx="18"/>
+  <text class="mono" x="432" y="171">libso3.a</text>
+
+  <rect class="group-lv" x="16" y="208" width="486" height="84" rx="8"/>
+  <text class="mono group-label" x="32" y="230">usr/lvgl/</text>
+  <rect class="node-lv" x="40" y="244" width="100" height="36" rx="18"/>
+  <text class="mono" x="90" y="267">*.c</text>
+  <path class="edge" d="M140,262 H208" marker-end="url(#arrow)"/>
+  <text class="tool" x="174" y="255">gcc</text>
+  <rect class="node-lv" x="210" y="244" width="100" height="36" rx="18"/>
+  <text class="mono" x="260" y="267">*.o</text>
+  <path class="edge" d="M310,262 H378" marker-end="url(#arrow)"/>
+  <text class="tool" x="344" y="255">ar</text>
+  <rect class="node-lv" x="380" y="244" width="104" height="36" rx="18"/>
+  <text class="mono" x="432" y="267">liblvgl.a</text>
+
+  <path class="edge" d="M310,70 H540 V262 M484,166 H540 M484,262 H540"/>
+  <path class="edge" d="M540,166 H576" marker-end="url(#arrow)"/>
+
+  <rect class="node" x="578" y="144" width="100" height="44" rx="6"/>
+  <text x="628" y="171">Linker (<tspan class="mono">ld</tspan>)</text>
+  <path class="edge" d="M678,166 H716" marker-end="url(#arrow)"/>
+  <rect class="node" x="718" y="148" width="96" height="36" rx="18"/>
+  <text class="mono" x="766" y="171">demo.elf</text>
+</svg>
