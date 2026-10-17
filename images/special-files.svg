@@ -1,0 +1,68 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 860 410" width="860" height="410" role="img" aria-labelledby="t">
+  <title id="t">Special files in SO3</title>
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#5c6b77"/>
+    </marker>
+    <marker id="arrow-muted" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M0,0 L10,5 L0,10 z" fill="#b8c0c7"/>
+    </marker>
+  </defs>
+  <style>
+    text { font-family: "Helvetica Neue", Helvetica, Arial, sans-serif; font-size: 14px; fill: #333; text-anchor: middle; }
+    .area { font-size: 12px; fill: #7e888b; letter-spacing: 0.08em; }
+    .sub { font-size: 12px; fill: #7e888b; font-style: italic; }
+    .bold { font-weight: bold; }
+    .mono { font-family: Menlo, Consolas, "Liberation Mono", monospace; font-size: 13px; }
+    .label { font-family: Menlo, Consolas, "Liberation Mono", monospace; font-size: 12px; fill: #5c6b77; }
+    .divider { stroke: #b8c0c7; stroke-width: 1; stroke-dasharray: 6 4; }
+    .time { stroke: #b8c0c7; stroke-width: 1.5; stroke-dasharray: 2 4; fill: none; }
+    .node { fill: #fff; stroke: #5c6b77; stroke-width: 1.5; }
+    .node-new { fill: #eaf2fb; stroke: #4183c4; stroke-width: 1.5; }
+    .edge { stroke: #5c6b77; stroke-width: 1.5; fill: none; }
+  </style>
+
+  <path class="time" d="M20,20 H836" marker-end="url(#arrow-muted)"/>
+  <rect x="400" y="11" width="60" height="18" fill="#fff"/>
+  <text class="sub" x="430" y="24">time</text>
+
+  <text class="area" x="135" y="56">KERNEL</text>
+  <text class="sub" x="135" y="73">driver initialization</text>
+  <line class="divider" x1="270" y1="44" x2="270" y2="400"/>
+  <text class="area" x="415" y="56">USER SPACE</text>
+  <text class="sub" x="415" y="73">system calls</text>
+  <line class="divider" x1="560" y1="44" x2="560" y2="400"/>
+  <text class="area" x="715" y="56">KERNEL</text>
+  <text class="sub" x="715" y="73">VFS and device classes</text>
+
+  <rect class="node" x="60" y="98" width="140" height="44" rx="8"/>
+  <text x="130" y="125">PL111 driver</text>
+  <rect class="node" x="60" y="163" width="140" height="44" rx="8"/>
+  <text x="130" y="190">PL050 driver</text>
+
+  <rect class="node-new" x="640" y="98" width="150" height="44" rx="8"/>
+  <text class="mono" x="715" y="125">device.c</text>
+
+  <path class="edge" d="M200,120 H638" marker-end="url(#arrow)"/>
+  <path class="edge" d="M200,185 H226 V120"/>
+  <text class="label" x="420" y="111">devclass_register(dev)</text>
+
+  <rect class="node" x="315" y="233" width="200" height="44" rx="8"/>
+  <text class="mono" x="415" y="260">open("/dev/fb0")</text>
+  <rect class="node-new" x="640" y="229" width="150" height="52" rx="8"/>
+  <text class="bold" x="715" y="250">vfs.c</text>
+  <text class="mono" x="715" y="268">do_open</text>
+  <path class="edge" d="M515,255 H638" marker-end="url(#arrow)"/>
+  <path class="edge" d="M715,229 V144" marker-end="url(#arrow)"/>
+  <text class="label" x="707" y="180" style="text-anchor: end">devclass_get_fops</text>
+  <text class="label" x="707" y="196" style="text-anchor: end">("fb0")</text>
+
+  <rect class="node" x="315" y="323" width="200" height="44" rx="8"/>
+  <text class="mono" x="415" y="350">mmap(fd), ioctl(fd)</text>
+  <rect class="node-new" x="640" y="319" width="150" height="52" rx="8"/>
+  <text class="bold" x="715" y="340">vfs.c</text>
+  <text class="mono" x="715" y="358">do_mmap, do_ioctl</text>
+  <path class="edge" d="M515,345 H638" marker-end="url(#arrow)"/>
+  <path class="edge" d="M790,335 H814 V357 H792" marker-end="url(#arrow)"/>
+  <text class="label" x="715" y="394">vfs_get_fops(gfd)</text>
+</svg>

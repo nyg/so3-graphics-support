@@ -15,10 +15,6 @@ $sidebar-hl: #1b589d;
 
 /*-- scss:rules --*/
 
-@if $web-font-path {
-  @import url($web-font-path);
-}
-
 h1, h2, h3, h4, h5, h6,
 .h1, .h2, .h3, .h4, .h5, .h6,
 h1.title {

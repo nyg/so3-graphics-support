@@ -124,7 +124,7 @@ Talking to this controller requires a driver, which lives in the kernel rather t
 
 Linux and other Unix-like operating systems provide special files, also called device files,[^device-file] which exist on no file system such as FAT or NTFS but give access to a device. A framebuffer, for example, is represented by a file named `/dev/fbX`, where `X` is a number. The technique is attractive because it extends to other devices, including input devices like the keyboard and the mouse, with file names such as `/dev/keyboardX` or `/dev/mouseX`.
 
-SO3 could already open regular files but did not support special files, so they were added. Their implementation is described in the next chapter.
+SO3 could already open regular files but did not support special files, so they were added, as described in @sec-special-files.
 
 In Linux, once the framebuffer file is open and its file descriptor obtained with the `open` system call, writing to the file writes to the framebuffer. Calling `write` over and over, however, hurts the application's performance.
 
@@ -299,7 +299,7 @@ lv_fs_res_t fs_read_cb(struct _lv_fs_drv_t *drv,
 }
 ```
 
-@fig-lvgl-drivers shows how the LittlevGL drivers described above interact with the SO3 kernel. The kernel side, with SO3's drivers and its virtual file system, is the subject of the next chapter.
+@fig-lvgl-drivers shows how the LittlevGL drivers described above interact with the SO3 kernel. The kernel side, with SO3's drivers and its virtual file system, is the subject of @sec-so3.
 
 ![LittlevGL's drivers and how they reach the SO3 kernel through the C library.](images/lvgl-drivers.svg){#fig-lvgl-drivers fig-alt="Inside the LittlevGL application, the display driver, the mouse and keyboard input drivers and the file system driver each go through the C library, using open, mmap and ioctl, to reach their kernel counterpart: the framebuffer driver, the mouse driver, the keyboard driver and the virtual file system. The input and file system drivers feed the display driver."}
 

@@ -1,0 +1,71 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 840 186" width="840" height="186" role="img" aria-labelledby="t">
+  <title id="t">The bits of the LCDControl register</title>
+  <style>
+    text { font-family: "Helvetica Neue", Helvetica, Arial, sans-serif; font-size: 13px; fill: #333; text-anchor: middle; }
+    .bit { font-family: Menlo, Consolas, "Liberation Mono", monospace; font-size: 12px; fill: #7e888b; }
+    .muted { fill: #7e888b; }
+    .cell { fill: #fff; stroke: #5c6b77; stroke-width: 1.5; }
+    .cell-unused { fill: #f1f3f5; stroke: #5c6b77; stroke-width: 1.5; }
+    .cell-set { fill: #eaf2fb; stroke: #4183c4; stroke-width: 1.5; }
+  </style>
+
+  <rect class="cell-unused" x="20" y="40" width="120" height="130"/>
+  <text class="muted" x="80" y="110">Undefined</text>
+  <text class="bit" x="38" y="30">31</text>
+  <text class="bit" x="122" y="30">17</text>
+
+  <rect class="cell" x="140" y="40" width="40" height="130"/>
+  <text transform="translate(164 105) rotate(-90)">WATERMARK</text>
+  <text class="bit" x="160" y="30">16</text>
+
+  <rect class="cell-unused" x="180" y="40" width="80" height="130"/>
+  <text class="muted" transform="translate(224 105) rotate(-90)">Undefined</text>
+  <text class="bit" x="200" y="30">15</text>
+  <text class="bit" x="240" y="30">14</text>
+
+  <rect class="cell" x="260" y="40" width="80" height="130"/>
+  <text transform="translate(304 105) rotate(-90)">LcdVComp</text>
+  <text class="bit" x="280" y="30">13</text>
+  <text class="bit" x="320" y="30">12</text>
+
+  <rect class="cell-set" x="340" y="40" width="40" height="130"/>
+  <text transform="translate(364 105) rotate(-90)">LcdPwr</text>
+  <text class="bit" x="360" y="30">11</text>
+
+  <rect class="cell" x="380" y="40" width="40" height="130"/>
+  <text transform="translate(404 105) rotate(-90)">BEPO</text>
+  <text class="bit" x="400" y="30">10</text>
+
+  <rect class="cell" x="420" y="40" width="40" height="130"/>
+  <text transform="translate(444 105) rotate(-90)">BEBO</text>
+  <text class="bit" x="440" y="30">9</text>
+
+  <rect class="cell-set" x="460" y="40" width="40" height="130"/>
+  <text transform="translate(484 105) rotate(-90)">BGR</text>
+  <text class="bit" x="480" y="30">8</text>
+
+  <rect class="cell-set" x="500" y="40" width="40" height="130"/>
+  <text transform="translate(524 105) rotate(-90)">LcdDual</text>
+  <text class="bit" x="520" y="30">7</text>
+
+  <rect class="cell" x="540" y="40" width="40" height="130"/>
+  <text transform="translate(564 105) rotate(-90)">LcdMono8</text>
+  <text class="bit" x="560" y="30">6</text>
+
+  <rect class="cell-set" x="580" y="40" width="40" height="130"/>
+  <text transform="translate(604 105) rotate(-90)">LcdTFT</text>
+  <text class="bit" x="600" y="30">5</text>
+
+  <rect class="cell" x="620" y="40" width="40" height="130"/>
+  <text transform="translate(644 105) rotate(-90)">LcdBW</text>
+  <text class="bit" x="640" y="30">4</text>
+
+  <rect class="cell-set" x="660" y="40" width="120" height="130"/>
+  <text x="720" y="110">LcdBpp</text>
+  <text class="bit" x="680" y="30">3</text>
+  <text class="bit" x="760" y="30">1</text>
+
+  <rect class="cell-set" x="780" y="40" width="40" height="130"/>
+  <text transform="translate(804 105) rotate(-90)">LcdEn</text>
+  <text class="bit" x="800" y="30">0</text>
+</svg>

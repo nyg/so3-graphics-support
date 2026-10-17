@@ -1,0 +1,60 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 860 320" width="860" height="320" role="img" aria-labelledby="t">
+  <title id="t">How the framebuffer's memory is mapped into the process</title>
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#5c6b77"/>
+    </marker>
+  </defs>
+  <style>
+    text { font-family: "Helvetica Neue", Helvetica, Arial, sans-serif; font-size: 14px; fill: #333; text-anchor: middle; }
+    .bold { font-weight: bold; }
+    .label { font-family: Menlo, Consolas, "Liberation Mono", monospace; font-size: 12px; fill: #5c6b77; }
+    .note { font-size: 12px; fill: #7e888b; }
+    .node { fill: #fff; stroke: #5c6b77; stroke-width: 1.5; }
+    .node-new { fill: #eaf2fb; stroke: #4183c4; stroke-width: 1.5; }
+    .edge { stroke: #5c6b77; stroke-width: 1.5; fill: none; }
+    .dashed { stroke: #5c6b77; stroke-width: 1.5; fill: none; stroke-dasharray: 5 4; }
+    .guide { stroke: #9aa5ae; stroke-width: 1; fill: none; stroke-dasharray: 4 3; }
+    .column { stroke: #5c6b77; stroke-width: 1.5; }
+    .region { fill: #fafafa; stroke: #5c6b77; stroke-width: 1.5; }
+    .mapped { fill: #eaf2fb; stroke: #4183c4; stroke-width: 1.5; }
+  </style>
+
+  <rect class="node" x="30" y="40" width="150" height="230" rx="8"/>
+  <text class="bold" x="105" y="160">Process</text>
+
+  <rect class="node" x="330" y="40" width="140" height="56" rx="8"/>
+  <text x="400" y="73">VFS</text>
+  <rect class="node-new" x="330" y="200" width="140" height="56" rx="8"/>
+  <text x="400" y="233">PL111 driver</text>
+
+  <path class="edge" d="M180,58 H328" marker-end="url(#arrow)"/>
+  <text class="label" x="255" y="50">open</text>
+  <path class="edge" d="M330,78 H182" marker-end="url(#arrow)"/>
+  <text class="note" x="255" y="96">file descriptor</text>
+
+  <path class="edge" d="M180,218 H328" marker-end="url(#arrow)"/>
+  <text class="label" x="255" y="210">mmap</text>
+  <path class="edge" d="M330,238 H182" marker-end="url(#arrow)"/>
+  <text class="note" x="255" y="256">pointer</text>
+
+  <path class="dashed" d="M470,228 C510,228 520,172 556,172" marker-end="url(#arrow)"/>
+  <text class="label" x="512" y="246">fb_mmap</text>
+
+  <line class="column" x1="560" y1="30" x2="560" y2="270"/>
+  <line class="column" x1="670" y1="30" x2="670" y2="270"/>
+  <rect class="region" x="560" y="90" width="110" height="120"/>
+  <text x="615" y="114">Process</text>
+  <rect class="mapped" x="560" y="140" width="110" height="60"/>
+  <text class="note" x="615" y="174">mapped</text>
+
+  <line class="column" x1="730" y1="30" x2="730" y2="270"/>
+  <line class="column" x1="840" y1="30" x2="840" y2="270"/>
+  <rect class="mapped" x="730" y="70" width="110" height="60"/>
+  <text class="bold" x="785" y="105">VRAM</text>
+
+  <path class="guide" d="M670,140 L730,70 M670,200 L730,130"/>
+
+  <text class="note" x="615" y="294">Virtual memory</text>
+  <text class="note" x="785" y="294">Physical memory</text>
+</svg>

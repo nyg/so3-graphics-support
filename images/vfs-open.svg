@@ -1,0 +1,55 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 860 290" width="860" height="290" role="img" aria-labelledby="t">
+  <title id="t">What happens in the VFS when a file is opened</title>
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#5c6b77"/>
+    </marker>
+  </defs>
+  <style>
+    text { font-family: "Helvetica Neue", Helvetica, Arial, sans-serif; font-size: 14px; fill: #333; text-anchor: middle; }
+    .area { font-size: 12px; fill: #7e888b; letter-spacing: 0.08em; }
+    .bold { font-weight: bold; }
+    .mono { font-family: Menlo, Consolas, "Liberation Mono", monospace; font-size: 13px; }
+    .note { font-size: 12px; fill: #7e888b; }
+    .note-mono { font-family: Menlo, Consolas, "Liberation Mono", monospace; font-size: 12px; fill: #7e888b; }
+    .divider { stroke: #b8c0c7; stroke-width: 1; stroke-dasharray: 6 4; }
+    .libc { fill: #f1f3f5; stroke: #d5dbe0; }
+    .node { fill: #fff; stroke: #5c6b77; stroke-width: 1.5; }
+    .node-new { fill: #eaf2fb; stroke: #4183c4; stroke-width: 1.5; }
+    .example { fill: #fff; stroke: #9aa5ae; stroke-width: 1.5; stroke-dasharray: 5 4; }
+    .example-text { fill: #7e888b; font-style: italic; }
+    .edge { stroke: #5c6b77; stroke-width: 1.5; fill: none; }
+  </style>
+
+  <text class="area" x="120" y="36">USER SPACE</text>
+  <line class="divider" x1="250" y1="20" x2="250" y2="275"/>
+  <text class="area" x="555" y="36">KERNEL</text>
+
+  <rect class="libc" x="30" y="64" width="180" height="196" rx="8"/>
+  <text class="bold" x="120" y="90">libc</text>
+  <text class="mono" x="120" y="167">open("…")</text>
+
+  <rect class="node-new" x="380" y="80" width="140" height="50" rx="8"/>
+  <text class="bold" x="450" y="110">VFS</text>
+
+  <rect class="node" x="620" y="80" width="220" height="50" rx="8"/>
+  <text class="mono" x="730" y="110">struct fd *open_fds[]</text>
+
+  <rect class="node" x="290" y="214" width="130" height="44" rx="8"/>
+  <text x="355" y="241">FAT</text>
+  <rect class="example" x="450" y="214" width="120" height="44" rx="8"/>
+  <text class="example-text" x="510" y="241">NTFS</text>
+  <rect class="example" x="600" y="214" width="130" height="44" rx="8"/>
+  <text class="example-text" x="665" y="241">Drivers</text>
+
+  <path class="edge" d="M210,162 H300 V105 H378" marker-end="url(#arrow)"/>
+  <path class="edge" d="M520,105 H618" marker-end="url(#arrow)"/>
+  <text class="note" x="569" y="96">stores</text>
+
+  <path class="edge" d="M450,130 V180"/>
+  <path class="edge" d="M355,180 H665"/>
+  <path class="edge" d="M355,180 V212" marker-end="url(#arrow)"/>
+  <path class="edge" d="M510,180 V212" marker-end="url(#arrow)"/>
+  <path class="edge" d="M665,180 V212" marker-end="url(#arrow)"/>
+  <text class="note-mono" x="458" y="160" style="text-anchor: start">gets file_operations</text>
+</svg>
