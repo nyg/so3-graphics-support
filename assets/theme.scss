@@ -75,6 +75,23 @@ main.content {
     margin-bottom: 1rem;
   }
 
+  p, li {
+    hyphens: auto;
+    text-wrap: pretty;
+
+    @media (min-width: 768px) {
+      text-align: justify;
+    }
+  }
+
+  figcaption p,
+  .quarto-float-caption p,
+  td p,
+  th p {
+    text-align: inherit;
+    hyphens: manual;
+  }
+
   a {
     text-decoration: underline;
     text-decoration-color: rgba($accent, 0.35);
