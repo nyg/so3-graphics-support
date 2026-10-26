@@ -44,7 +44,7 @@ Each of these operations corresponds to a system call. The `open` system call, f
 
 ### Implementation {#sec-special-files-implementation}
 
-From `do_open`, then, SO3 must be able to retrieve the file operations of the driver that matches the file name. For this, a new structure was created: `devclass`. Among other things, it holds the controller type (such as `fb`) and the file operations the driver defines. A list of `devclass` structures lives in `so3/device/device.c`.
+From `do_open`, then, SO3 must be able to retrieve the file operations of the driver that matches the file name. For this, a new structure was created: `devclass`. Among other things, it holds the controller type (such as `fb`) and the file operations the driver defines. A list of `devclass` structures lives in `so3/devices/device.c`.
 
 A driver adds itself to this list by calling `devclass_register`. The VFS, in turn, calls `devclass_get_fops` to retrieve a driver's file operations. Both functions are defined in `device.c`.
 
@@ -56,7 +56,8 @@ struct file_operations driver_fops = {
 };
 
 struct devclass driver_cdev = {
-    .class = DEV_CLASS_, /* device class, defined in device.h */
+    .class = DEV_CLASS_,   /* device class, defined in device.h */
+    .type = VFS_TYPE_DEV_, /* file type, defined in vfs.h */
     .fops = &driver_fops,
 };
 
@@ -85,6 +86,7 @@ int do_open(const char *filename, int flags)
     else {
         /* Get fops of the FAT filesystem. */
         fops = registered_fs_ops[0];
+        type = VFS_TYPE_FILE;
     }
 
     /* Create struct fd entry in open_fds and stores fops. */
@@ -141,9 +143,9 @@ Depending on its configuration, the PL111 can drive one or two panels (the LcdDu
 
 The PL111 lets the driver choose where the two framebuffers live in RAM. The address of the first panel goes in the LCDUPBASE register (*upper panel*), and that of the second in LCDLPBASE (*lower panel*).
 
-These are fixed physical addresses, and they must be aligned on four bytes (their last two bits are 0). Since only one panel is used, LCDLPBASE is set to 0. The Versatile Express platform dedicates 32 MB of video memory (*video SRAM*, or VRAM) to this purpose, located at address `0x18000000`, and this is the address used for LCDUPBASE. @fig-vram-address shows where this address comes from, based on the *Motherboard Express µATX Technical Reference Manual*.[^motherboard-trm]
+These are fixed physical addresses, and they must be aligned on eight bytes: the controller ignores their last three bits. Since only one panel is used, LCDLPBASE is set to 0. The Versatile Express motherboard maps a 32 MB window at address `0x18000000` for its video memory (*video SRAM*, or VRAM), which itself holds 8 MB. A 1024×768 framebuffer at 4 bytes per pixel takes 3 MB, so it fits, and `0x18000000` is the address used for LCDUPBASE. @fig-vram-address shows where this address comes from, based on the *Motherboard Express µATX Technical Reference Manual*.[^motherboard-trm]
 
-![The video SRAM sits at the start of chip select CS2, which the motherboard maps at 0x18000000.](images/vram-address.svg){#fig-vram-address fig-alt="The motherboard's memory map from 0x00000000 to 0x20000000 is divided into chip selects. CS2 starts at 0x18000000. The video SRAM occupies offsets 0x00000000 to 0x01FFFFFF of CS2, so its physical addresses run from 0x18000000 to 0x19FFFFFF."}
+![The video SRAM sits at the start of chip select CS2, which the motherboard maps at 0x18000000.](images/vram-address.svg){#fig-vram-address fig-alt="The motherboard's memory map from 0x00000000 to 0x20000000 is divided into chip selects. CS2 starts at 0x18000000. The video SRAM window occupies offsets 0x00000000 to 0x01FFFFFF of CS2, so its physical addresses run from 0x18000000 to 0x19FFFFFF."}
 
 #### Setting the resolution {.unnumbered}
 
@@ -153,11 +155,13 @@ In the first, six bits encode the number of pixels per line (PPL), defined as $H
 
 Both registers hold other values that must be filled in too. Example values for these fields can be found in various Device Tree Source (DTS) files of the Linux kernel.
 
-The last two timing registers configure properties of the clock signals.
+The third timing register sets the pixel clock and the polarity of the synchronization signals. The fourth controls an optional line-end signal, unused here and left at 0.
 
 #### The control register {.unnumbered}
 
 The control register is one of the most important, since it is the one that enables the controller, as explained in [Enabling the controller](#sec-pl111-enable). It also sets, among other things, the number of bits per pixel (bpp), the type of screen (TFT or STN), the number of panels (one or two), and whether red and blue are swapped (BGR or RGB).
+
+The driver sets BGR to 1. With this setting the controller reads blue from the lowest byte of each pixel and red from bits 16 to 23, which is exactly how LittlevGL stores its 32-bit colors.
 
 ![The bits of the LCDControl register. The fields the driver sets are highlighted.](images/lcd-control.svg){#fig-lcd-control fig-alt="A 32-bit register diagram. Bits 31 to 17 are undefined. Bit 16 is WATERMARK, bits 15 and 14 are undefined, bits 13 and 12 are LcdVComp, bit 11 is LcdPwr, bit 10 is BEPO, bit 9 is BEBO, bit 8 is BGR, bit 7 is LcdDual, bit 6 is LcdMono8, bit 5 is LcdTFT, bit 4 is LcdBW, bits 3 to 1 are LcdBpp and bit 0 is LcdEn. LcdPwr, BGR, LcdDual, LcdTFT, LcdBpp and LcdEn are highlighted."}
 
@@ -267,9 +271,9 @@ A new `input` directory was created in `so3/devices`. A keyboard driver and a mo
 
 The controller is initialized through two registers: KMICLKDIV (*clock divisor register*) and KMICR (*control register*).
 
-According to ARM's documentation, the reference clock must produce an 8 MHz signal. KMICLKDIV holds the value used to divide the reference clock down to those 8 MHz. The value 2 was taken from the Linux driver.
+According to ARM's documentation, the controller needs an internal 8 MHz clock, derived from its reference clock. KMICLKDIV holds the value used to divide the reference clock down to those 8 MHz: the controller divides by the divisor plus one. The platform feeds the PL050 a 24 MHz reference clock, so a divisor of 2 gives the required 8 MHz. Linux computes the same value. QEMU ignores this register.
 
-The control register (KMICR) must then be set to enable the controller (bit KmiEn) and the interrupts raised when data is received from the device (bit KMIRXINTREn). The driver also sets KMITXINTREn, which enables interrupts raised when data can be sent to the device, although it never acts on them.
+The control register (KMICR) must then be set to enable the controller (bit KmiEn) and the interrupts raised when data is received from the device (bit KMIRXINTREn). The interrupt raised when data can be sent to the device (bit KMITXINTREn) is not needed and stays disabled. In QEMU it would actually fire continuously, since the emulated transmit register is always empty.
 
 The interrupt service routine, which runs whenever the driver can read data sent by the device, must also be registered with SO3's interrupt controller. This is done with the `irq_bind` function, defined in `irq.c`.
 
@@ -279,10 +283,10 @@ All of this happens in the `pl050_init` function of `pl050.c`:
 int pl050_init(dev_t *dev, dev_t *dev_copy, struct devclass *cdev,
                irq_return_t (*isr)(int, void *))
 {
-    /* Set the clock divisor (arbitrary value). */
+    /* 24 MHz / (2 + 1) = 8 MHz. */
     iowrite8(dev->base + KMI_CLKDIV, 2);
 
-    /* Enable transmitter and receiver interrupt. */
+    /* Enable the interface and the receiver interrupt. */
     iowrite8(dev->base+KMI_CR, KMICR_EN | KMICR_RXINTREN | KMICR_TXINTREN);
 
     /* Bind the ISR to the interrupt controller. */
@@ -382,7 +386,7 @@ void get_mouse_state(uint8_t *packet,
 
 Decoding keyboard packets is much more involved.[^ps2-keyboard] The driver has to account for:
 
-- the different kinds of keys: some send a 2-byte packet, others a 3-byte packet;
+- the different kinds of keys: a normal key sends one byte when pressed and two when released (`F0` then its code); an extended key, such as an arrow, adds an `E0` prefix, giving two and three bytes; a few keys, like Pause, send even longer sequences;
 - the state of the key: pressed or released;
 - modifier keys, such as Shift, Ctrl and Alt, which change the behavior of other keys, can be combined, and are each sent in their own packet;
 - the different behaviors of a key press: A should type "a", Shift + A should type "A", while Ctrl + A should be able to trigger an action defined by user space.
@@ -393,9 +397,9 @@ All of this without even considering the keyboard layout, which the user could c
 - uppercase letters, with the Shift key;
 - a few control keys, such as the arrows, Backspace, Delete and Tab.
 
-The driver translates the *scan codes* (key identifiers) found in the packets into UTF-8 characters, and stores the last code it computed in a `ps2_key` structure. The packets are decoded by the `get_kb_key` function in `ps2.c`.
+The driver translates the *scan codes* (key identifiers) found in the packets into ASCII characters or, for control keys such as the arrows, into the key codes LittlevGL expects (`LV_KEY_LEFT`, `LV_KEY_DEL` and so on), so the application can pass them on unchanged. It stores the last value it computed in a `ps2_key` structure. The packets are decoded by the `get_kb_key` function in `ps2.c`.
 
-To translate scan codes into UTF-8 characters, `ps2.c` contains several lookup tables, indexed as `table[scan code] = UTF-8 character`. The drawback of this approach is that many table entries are unused, which wastes memory.
+For this translation, `ps2.c` contains several lookup tables, indexed as `table[scan code] = character`, which follow the Swiss keyboard layout. The drawback of this approach is that many table entries are unused, which wastes memory.
 
 ```c
 void get_kb_key(uint8_t *packet, uint8_t len, struct ps2_key *key)
@@ -445,6 +449,8 @@ The available `ioctl` operations are defined in `kmi0.c` and `kmi1.c`:
 - `SET_SIZE` tells the driver the screen resolution, so that it can clamp the mouse coordinates and keep the pointer on screen. It takes a `display_res` structure.
 - `GET_STATE` returns the current mouse coordinates and button state, as a `ps2_mouse` structure.
 - `GET_KEY` returns the last key pressed on the keyboard, as a `ps2_key` structure.
+
+User space uses its own names for the same values (`IOCTL_MOUSE_GET_STATE`, `IOCTL_MOUSE_SET_RES` and `IOCTL_KB_GET_KEY`, see @sec-lvgl-input). `GET_STATE` and `GET_KEY` clear the button state and the key once read, so that a click or key press arriving between two LittlevGL reads is not lost.
 
 [^qemu-vexpress]: <https://www.qemu.org/docs/master/system/arm/vexpress.html>
 [^pl111-trm]: ARM PrimeCell Color LCD Controller (PL111) Technical Reference Manual, <https://developer.arm.com/documentation/ddi0293/c/>
