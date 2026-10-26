@@ -1,6 +1,6 @@
 # Specification {#sec-specification}
 
-This appendix is the specification (*cahier des charges*) the thesis was carried out against, preceded by the summary of the problem it addresses.
+This appendix reproduces the specification (*cahier des charges*) of the thesis as rewritten for the final report, preceded by the summary of the problem it addresses. It differs from the official specification of 25 February 2020 mainly in naming no specific graphics library, where the official one names LittlevGL, and in adding keyboard support to the mouse support the official one asks for.
 
 ## Problem summary {#sec-problem-summary}
 
