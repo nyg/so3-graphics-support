@@ -16,7 +16,7 @@ The library comes as a directory named `lvgl` holding its source code, along wit
 
 A configuration file, `lv_conf.h`, is also provided and must sit next to the `lvgl` directory. It holds settings such as the maximum resolution the library must support, the number of bits per pixel and the log level.
 
-The maximum resolution was set to 1920×1080, which is plenty for an embedded system. The effective resolution, limited by the screen in use, is passed to LittlevGL by the user application. The only other setting changed is the number of bits per pixel, set to 32: one byte each for alpha (transparency), red, green and blue.
+The maximum resolution was set to 1920×1080, which is plenty for an embedded system. The effective resolution, limited by the screen in use, is passed to LittlevGL by the user application. Two other settings were changed. The number of bits per pixel was set to 32: one byte each for alpha (transparency), red, green and blue. Logging was turned on, at the *warning* level and printed with `printf`.
 
 The library lives in the user space of SO3 rather than in the kernel, since user applications are the ones using it. It was placed in `so3/usr/lvgl`, giving the layout shown in @fig-usr-tree.
 
@@ -76,8 +76,9 @@ int main(int argc, char **argv)
 
     /* User-defined initializations. */
     fs_init();
-    fbdev_init();
-    inputdev_init();
+    fb_init();
+    mouse_init();
+    keyboard_init();
 
     create_ui();
 
@@ -142,9 +143,11 @@ int fd = open("/dev/fb0", O_WRONLY);
 /* Map its memory into user space. */
 uint32_t *fbp = mmap(NULL, FB_SIZE, PROT_WRITE, MAP_SHARED, fd, 0);
 
-/* Write a red pixel, 24 bpp RGB. */
+/* Red pixel: red in bits 16-23. */
 fbp[0] = 0x00ff0000;
 ```
+
+This is the POSIX form. SO3's `mmap` ignores the protection and flag arguments, and the size `FB_SIZE` is obtained from the driver, as @sec-fb-properties explains.
 
 #### LittlevGL's display driver {.unnumbered}
 
@@ -152,7 +155,7 @@ In LittlevGL's terminology, a *driver* is a C structure that enables a feature. 
 
 The display driver,[^display] for example, must be given a buffer that LittlevGL uses to draw the interface. It also needs a callback that copies this buffer into the framebuffer. If the buffer is smaller than the screen, the interface is drawn in several passes, so there is a trade-off between memory use and CPU use. Either way, LittlevGL only redraws the parts of the interface that changed.
 
-LittlevGL can also be given a second buffer, so that drawing the interface and copying it to the framebuffer happen in parallel. This requires the OS to support direct memory access (DMA), which SO3 does not, so no second buffer was used here.
+LittlevGL can also be given a second buffer, so that drawing the interface and copying it to the framebuffer happen in parallel. This only pays off if the copy is done by hardware, such as a direct memory access (DMA) controller, while the CPU draws the next frame. SO3 has no driver for such hardware, so a single buffer was used.
 
 The following code initializes the driver:
 
@@ -218,6 +221,8 @@ mouse_drv.read_cb = my_mouse_cb;
 lv_indev_drv_register(&mouse_drv);
 ```
 
+The demo also gives the pointer a cursor image, the + visible in @fig-demo-1, with `lv_indev_set_cursor`.
+
 ```c
 bool my_mouse_cb(lv_indev_drv_t *indev, lv_indev_data_t *data)
 {
@@ -234,7 +239,22 @@ bool my_mouse_cb(lv_indev_drv_t *indev, lv_indev_data_t *data)
 
 #### Keyboard input driver {.unnumbered}
 
-The keyboard driver is initialized the same way. Its callback fetches the last key pressed with an `ioctl` call:
+The keyboard is registered as a *keypad*. LittlevGL only sends key presses to the objects of a group attached to the keypad, so the demo creates a group and later adds its text area and on-screen keyboard to it:
+
+```c
+int kfd = open("/dev/keyboard0", 0);
+
+lv_indev_drv_t keyboard_drv;
+lv_indev_drv_init(&keyboard_drv);
+keyboard_drv.type = LV_INDEV_TYPE_KEYPAD;
+keyboard_drv.read_cb = my_keyboard_cb;
+lv_indev_t *keyboard_dev = lv_indev_drv_register(&keyboard_drv);
+
+lv_group_t *keyboard_group = lv_group_create();
+lv_indev_set_group(keyboard_dev, keyboard_group);
+```
+
+Its callback fetches the last key pressed with an `ioctl` call:
 
 ```c
 bool my_keyboard_cb(lv_indev_drv_t *indev, lv_indev_data_t *data)
@@ -253,7 +273,7 @@ bool my_keyboard_cb(lv_indev_drv_t *indev, lv_indev_data_t *data)
 
 ### Accessing the file system {#sec-lvgl-fs}
 
-LittlevGL also provides a driver[^fs] for accessing the file systems of the OS, which lets the interface display images stored on disk, for example. One such driver is initialized for each file system LittlevGL needs to access. Much like on Windows, each driver instance is assigned a letter that identifies its files, as in `S:/my-image.png`. SO3 has a single file system, so a single driver is enough.
+LittlevGL also provides a driver[^fs] for accessing the file systems of the OS, which lets the interface display images stored on disk, for example. One such driver is initialized for each file system LittlevGL needs to access. Much like on Windows, each driver instance is assigned a letter that identifies its files, as in `S:/reds.bin`, the image shown by the demo. Images are converted beforehand to LittlevGL's binary format with its online converter. SO3 has a single file system, so a single driver is enough.
 
 As with the drivers above, the file system driver relies on callbacks. Here they bridge LittlevGL and the standard C file functions, such as `fopen`, `fread` and `fclose`. In SO3, these functions come from musl,[^musl] an implementation of the C standard library.
 
