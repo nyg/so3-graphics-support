@@ -20,11 +20,43 @@ Since SO3 had no graphics support, QEMU was started with the `-nographic` option
 
 The Versatile Express platform is made up of several device controllers, each with a specific role. To display the GUI, the PL111 controller (*PrimeCell Color LCD Controller*) manages the framebuffer. To talk to the mouse and keyboard, the PL050 controller (*PrimeCell PS2 Keyboard/Mouse Interface*) is used. A driver must be written for each of these controllers so that SO3 can use them.
 
+SO3 learns which controllers exist, and where, from the platform's device tree, which U-Boot loads into memory and passes to the kernel at boot. For each node, the kernel's `parse_dtb` function looks for a driver registered with the same *compatible* string, maps the controller's registers, and calls the driver's initialization function. These are the nodes added to SO3's `vexpress.dts` for this work:
+
+```{.default}
+clcd@1c1f0000 {
+    compatible = "arm,pl111";
+    reg = <0x1c1f0000 0x1000>;
+    status = "ok";
+};
+
+kmi@1c060000 { /* keyboard */
+    compatible = "arm,pl050,keyboard";
+    reg = <0x1c060000 0x100>;
+    interrupt-parent = <&gic>;
+    interrupts = <44>;
+    status = "ok";
+};
+
+kmi@1c070000 { /* mouse */
+    compatible = "arm,pl050,mouse";
+    reg = <0x1c070000 0x100>;
+    interrupt-parent = <&gic>;
+    interrupts = <45>;
+    status = "ok";
+};
+```
+
+`reg` gives the address and size of the controller's registers. The two PL050s are identical controllers, but each node has its own compatible string, which is how one gets the keyboard driver and the other the mouse driver.
+
+The interrupt numbers needed some care. ARM's documentation lists the two PL050s as interrupts 12 and 13, but these are numbered among the *shared peripheral interrupts* of the interrupt controller (GIC), which start at ID 32. SO3's device tree uses the GIC's own IDs, so 12 and 13 become 44 and 45.
+
 ## Special files {#sec-special-files}
 
 As seen with LittlevGL, a user-space application can only talk to a controller's driver if the driver is represented by a special file. The file is special because it has no content and does not exist on the file system. It still counts as a file, though, because it is opened with the `open` system call, which returns a file descriptor.
 
 The names of these files follow a convention close to that of Unix-like systems: `/dev/<device-class><device-id>`. `device-class` is the type of controller, such as `fb` for framebuffers or `mouse` for mice, and `device-id` numbers controllers of the same type. These values are defined in `so3/include/device/device.h`.
+
+This naming came in two steps. At first, framebuffers were opened as `fb.0`, `fb.1` and so on, through code specific to framebuffers. Once the mouse needed the same mechanism, the `/dev/` convention was introduced, and the per-class code was later merged into the single list of devices described below. `device-id` is not chosen by the driver: it is the position of the device among the registered devices of its class.
 
 ### The virtual file system {#sec-vfs}
 
@@ -113,9 +145,11 @@ With this in place, user space can get a file descriptor tied to a device. Throu
 
 ## Framebuffer driver {#sec-fb-driver}
 
-Writing the framebuffer driver starts with identifying the matching controller on the platform. On the ARM Versatile Express platform, this is the PL111.[^pl111-trm]
+Writing the framebuffer driver starts with identifying the matching controller on the platform. The CoreTile Express daughterboard, which carries the Cortex-A15, has an HDLCD controller, more capable than the CLCD on the motherboard, but QEMU does not emulate it. On the ARM Versatile Express platform, the controller to use is therefore the motherboard's CLCD, the PL111.[^pl111-trm]
 
-A new `fb` directory was created in `so3/devices`, and the driver was written in `pl111.c`.
+A new `fb` directory was created in `so3/devices`, and the driver was written in `pl111.c`. The register values were worked out by reading the Linux driver for this controller (`amba-clcd.c`) and QEMU's emulation of it (`hw/display/pl110.c`), and by looking at what Linux wrote to the controller when running in SOO. The first version used values copied from Linux, with 16 bits per pixel and a 640×480 resolution, and simply drew three colored bands (@fig-pl111-first-output). It later moved to 1024×768 and 24 bits per pixel.
+
+![The first output of the PL111 driver in QEMU: three bands of 160 lines each.](images/pl111-first-output.png){#fig-pl111-first-output fig-alt="A QEMU window filled with three horizontal bands: red at the top, green in the middle and blue at the bottom." width="60%"}
 
 ### The PL111 {#sec-pl111}
 
@@ -175,7 +209,7 @@ Once the LittlevGL application has a file descriptor for the framebuffer, it cal
 
 The kernel side of `mmap` was added to the VFS, in the `do_mmap` function, and it is simple. First, it computes the number of pages to map by dividing the size of the region (a parameter) by the page size (a kernel constant). Then, from the local file descriptor it receives, it looks up the global descriptor, and from that the file operations the driver defined. `mmap` is one of these operations, and `do_mmap` calls it.
 
-The core logic of the `mmap` system call is therefore defined by the driver, and can differ from one device to another. This split is very close to what Unix-like systems do.
+The core logic of the `mmap` system call is therefore defined by the driver, and can differ from one device to another. This split is very close to what Unix-like systems do: it follows the description of `mmap` in chapter 15 of *Linux Device Drivers*,[^ldd] and keeps the device-specific physical address inside the driver.
 
 The PL111 driver implements the `mmap` operation. The operation receives the virtual address in the process where the mapping should start, chosen by user space, and the number of pages to map. It maps the virtual address onto the physical address of the VRAM with the `create_mapping` function from `mmu.c`:
 
@@ -382,6 +416,10 @@ void get_mouse_state(uint8_t *packet,
 }
 ```
 
+A few details of the PS/2 protocol show through. The driver first puts the mouse in *streaming* mode by sending it the command `0xF4`, after which the mouse sends a 3-byte packet whenever it moves; polling the mouse from LittlevGL's read callback was considered as an alternative. The movement on each axis is a 9-bit signed value whose sign bit sits in the first byte of the packet, which is what the `GET_DX` and `GET_DY` macros reassemble. The vertical movement is subtracted because the PS/2 Y axis points up while the screen's points down. Bit 3 of the first byte is always 1, which lets the driver detect a misaligned packet.
+
+Two bugs made the pointer flicker in the first version. The service routine decoded incomplete packets, and the coordinates were unsigned, so a movement past the left or top edge wrapped around and sent the pointer to the opposite edge instead of stopping it at 0. The routine now only decodes complete 3-byte packets, and the coordinates are signed.
+
 #### Decoding the keyboard packets {.unnumbered}
 
 Decoding keyboard packets is much more involved.[^ps2-keyboard] The driver has to account for:
@@ -457,3 +495,4 @@ User space uses its own names for the same values (`IOCTL_MOUSE_GET_STATE`, `IOC
 [^motherboard-trm]: ARM Motherboard Express µATX Technical Reference Manual, <https://developer.arm.com/documentation/dui0447/latest/>
 [^pl050-trm]: ARM PrimeCell PS2 Keyboard/Mouse Interface (PL050) Technical Reference Manual, <https://developer.arm.com/documentation/ddi0143/c/>
 [^ps2-keyboard]: <https://wiki.osdev.org/PS/2_Keyboard>
+[^ldd]: Jonathan Corbet, Alessandro Rubini and Greg Kroah-Hartman, *Linux Device Drivers*, 3rd edition, O'Reilly, 2005, <https://lwn.net/Kernel/LDD3/>
