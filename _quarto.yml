@@ -1,16 +1,23 @@
 project:
   type: book
   output-dir: _book
+  resources:
+    - assets/Support-graphique-dans-SO3.pdf
 
 book:
   title: "Graphics Support in SO3"
   author: "Nikolaos Garanis"
   site-url: https://nyg.github.io/so3-graphics-support
   repo-url: https://github.com/nyg/so3-graphics-support
-  downloads: [pdf]
   page-navigation: false
   sidebar:
     style: docked
+    footer: |
+      <nav class="pdf-downloads" aria-label="PDF downloads">
+      <p class="pdf-downloads-title">Read as PDF</p>
+      <a href="./Graphics-Support-in-SO3.pdf" class="pdf-download"><span class="pdf-download-name">This edition</span><span class="pdf-download-meta">English · revised 2026</span></a>
+      <a href="./assets/Support-graphique-dans-SO3.pdf" class="pdf-download" hreflang="fr"><span class="pdf-download-name">Original thesis</span><span class="pdf-download-meta">French · July 2020</span></a>
+      </nav>
   chapters:
     - index.qmd
     - 01-introduction.qmd
