@@ -6,7 +6,7 @@ The first part of this thesis added graphics support to SO3 running standalone: 
 
 This second part brings those changes to an ME virtualized by SOO. The work is done on the ME called SOO.refso3, which, as its name suggests, is based on SO3.
 
-To understand the changes needed, it helps to know the main components of SOO and how they interact. The AVZ hypervisor (*Agency Virtualizer*), developed by REDS, starts first. It is a type 1 hypervisor, since it is the one that starts virtualizing operating systems. The first OS it virtualizes is the agency: a Linux kernel with several REDS additions that, among other things, let it communicate with the virtualized MEs.
+To understand the changes needed, it helps to know the main components of SOO and how they interact. The AVZ hypervisor (*Agency Virtualizer*), developed by REDS, starts first. It is a type 1 hypervisor: it runs directly on the hardware rather than inside a host OS, and starts the operating systems it virtualizes. The first OS it virtualizes is the agency: a Linux kernel with several REDS additions that, among other things, let it communicate with the virtualized MEs.
 
 The agency and the MEs are all *domains*. The agency is domain 0, and it is the only domain with access to the platform's hardware. Inside an ME, then, there is no hardware at all. To avoid changing the ME's user space, virtual drivers must be written that mimic the behavior of device drivers such as those of the PL111 and the PL050.
 
@@ -44,6 +44,8 @@ so3% *** Serial input -> Agency domain (type 'CTRL-a' twice to switch input to M
 agency ~ #
 ```
 
+Domains are numbered: 0 is the agency, 1 is reserved for the agency's real-time domain, 2 to 6 are MEs, and 7 stands for the AVZ hypervisor. In the listing, ME-1(2) is the first ME, domain 2.
+
 This mechanism was reused to track which domain is active and when the active domain changes. It decides which domain's framebuffer is shown on screen and which domain receives input events.
 
 The changes were made in `linux/soo/kernel/console/console.c`. Originally, it was only possible to switch between the agency and the first ME. A more generic function, `get_next`, was written to return the identifier of the next domain. It uses `get_ME_desc` to detect whether an ME is running.
@@ -54,9 +56,11 @@ Then, in the `avz_switch_console` function, the identifier of the active domain 
 
 ### Creating the backend and frontend {#sec-vfb-creation}
 
-The backend was created in `linux/soo/drivers/vfbback/vfb.c`, and the frontend in `SOO.refso3/so3/soo/drivers/vfbfront/vfb.c`. The name vfb stands for *virtual framebuffer*, following the convention of the other backends and frontends, such as vuart and vdummy.
+The backend lives in `linux/soo/drivers/vfbback/vfb.c`, and the frontend in `SOO.refso3/so3/soo/drivers/vfbfront/vfb.c`. The name vfb stands for *virtual framebuffer*, following the convention of the other backends and frontends, such as vuart and vdummy.
 
-To build them, a Makefile naming the object file to produce was added to both the `vfbback` and `vfbfront` directories. Since the source file is `vfb.c`, the object file is, by convention, `vfb.o`:
+The agency already contained an older vfb backend, and an older vinput backend, from earlier SOO work, which exchanged the framebuffer's properties in a different way. They were replaced by new backends built on vdummy, as described below, while the frontends and the ME's virtual drivers are new.
+
+To build them, each of the `vfbback` and `vfbfront` directories has a Makefile naming the object file to produce. Since the source file is `vfb.c`, the object file is, by convention, `vfb.o`:
 
 ```makefile
 # vfbback/Makefile
@@ -68,7 +72,7 @@ obj-$(CONFIG_VFB_FRONTEND) := vfb.o
 
 The `CONFIG_VFB_*` variables belong to Kconfig, the configuration system of the Linux kernel, which SO3 also uses. Kconfig turns kernel components, such as drivers, on or off. A component that is turned off is not compiled, which gives a smaller binary.
 
-This makes the vfb optional, so that MEs without a GUI can still be used. Both variables must be declared: the backend's in `soo/drivers/Kconfig`, and the frontend's in `so3/soo/drivers/Kconfig`. Here is the backend's declaration:
+This makes the vfb optional, so that MEs without a GUI can still be used. Both variables are declared: the backend's in `soo/drivers/Kconfig`, and the frontend's in `so3/soo/drivers/Kconfig`. The backend's declaration already existed; it was turned into a boolean option, off by default:
 
 ```{.default}
 config VFB_BACKEND
@@ -82,7 +86,7 @@ The kernel, Linux or SO3, is configured with `make menuconfig`, run in the direc
 
 ![Turning on the vfb backend in the agency's Kconfig menu.](images/kconfig.png){#fig-kconfig fig-alt="The menuconfig interface of the Linux 5.4.44 kernel, in the Smart Object Oriented subsystem menu, with the vfb framebuffer backend driver selected and enabled."}
 
-Since the kernel treats the backend and frontend as drivers, the DTS files describing the platform's hardware must reference them. The following excerpt shows the nodes to add: the backend in `vexpress-tz.dts` (Linux), and the frontend in `so3virt.dts` (SO3).
+Since the kernel treats the backend and frontend as drivers, the DTS files describing the platform's hardware must reference them. The following excerpt shows the nodes to add: the backend in `vexpress-tz.dts` (Linux, and likewise in `vexpress-notz.dts` and the Pi 4's `bcm2711-rpi-4-b.dts`), and the frontend in `so3virt.dts` (SO3).
 
 ```{.default}
 agency {
@@ -157,7 +161,7 @@ clcd@1f0000 {
 
 It gives the desired resolution, 1024×768, and a reference to the VRAM, described in `vexpress-tz.dts`. The driver computes the number of bits per pixel from the `max-memory-bandwidth` property, which is not set here, so it picks 32 bits per pixel, which suits this work.
 
-Next, the right framebuffer must be picked from `registered_fb`. For now, only one screen is expected to be attached to the embedded system, so picking the first framebuffer of the array is enough. This happens when the backend is initialized, in `vfb_init`: the first non-null `fb_info` of `registered_fb` decides which framebuffer is used, and is stored in a backend variable named `vfb_info`. A minimum resolution, arbitrarily set to 640×480, excludes framebuffers that are too small.
+Next, the right framebuffer must be picked from `registered_fb`. For now, only one screen is expected to be attached to the embedded system, so picking the first framebuffer of the array is enough. This happens when the backend is initialized, in `vfb_init`: the first non-null `fb_info` of `registered_fb` decides which framebuffer is used, and is stored in a backend variable named `vfb_info`. A minimum resolution, set to 640×480, excludes framebuffers that are too small, such as the one an 8×8 LED matrix registers on the Pi 4.
 
 Since the backend is a Linux driver just like the framebuffer drivers, there is no guarantee that the framebuffer driver is initialized before the backend, that is, that `registered_fb` is filled before the backend reads it. Linux, however, provides notifications for framebuffer events. The backend calls `fb_register_client`, defined in `fb_notify.c`, with a `notifier_block` structure holding a callback, which is then called for every framebuffer event.
 
@@ -324,6 +328,8 @@ gnttab_set_map_op(&op,
 gnttab_map(&op);
 ```
 
+SOO's `gnttab_map` maps a whole range, as large as requested, starting at the page of the given grant reference. The backend can therefore map the whole framebuffer from the first reference alone, which only works because `get_contig_free_pages` returns physically contiguous pages.
+
 ### Displaying the framebuffers {#sec-vfb-display}
 
 As explained in @sec-multiple-mes, pressing Ctrl + A twice changes the active domain. With the changes made to `console.c`, this key sequence calls the backend's `vfb_set_active_domfb` function.
@@ -342,7 +348,7 @@ To keep track of the physical and virtual addresses of the different framebuffer
 
 The last two values are needed when an ME shuts down, to unmap and free the allocated memory. The backend's `vfb_close` function releases these resources.
 
-There is one `vfb_domfb` structure for each domain that displays a framebuffer. They are created in the `callback_me_domfb` function seen above (except for the agency's) and stored in the `registered_domfb` array, indexed by domain identifier. The array's size is therefore the maximum number of domains that can be virtualized. This number is taken from `console.c` and set to 8; note that it counts the hypervisor, even though it is not a domain and has no framebuffer.
+There is one `vfb_domfb` structure for each domain that displays a framebuffer. They are created in the `callback_me_domfb` function seen above (except for the agency's) and stored in the `registered_domfb` array, indexed by domain identifier. The array's size is therefore the maximum number of domains that can be virtualized. This number is taken from `console.c` and set to 8, one slot per domain number listed in @sec-multiple-mes, even though slots 1 and 7 never hold a framebuffer.
 
 ```c
 struct gnttab_map_grant_ref op;
@@ -456,7 +462,7 @@ To get these events into the vinput backend, it is enough to change `input_event
 
 ### Creating the backend and frontend {#sec-vinput-creation}
 
-The backend and frontend are created much like those of the framebuffer. They are based on vdummy and live in `vinput` directories. A new node is added to both the Linux DTS and the ME's DTS, and the matching Kconfig files are changed so that the drivers can be turned on or off in the kernel configuration.
+The backend and frontend are created much like those of the framebuffer. They are based on vdummy and live in `vinput` directories; as with vfb, the new backend replaces an older one. A new node is added to both the Linux DTS and the ME's DTS, and the matching Kconfig files are changed so that the drivers can be turned on or off in the kernel configuration.
 
 The main difference between vfb and vinput lies in how the backend and frontend communicate. For vfb, three VBStore properties were enough. VBStore is not suited to sending events, though, since the agency may produce them faster than the ME consumes them.
 
@@ -543,7 +549,7 @@ So that user space needs no changes, these drivers respond to the same `ioctl` o
 
 ##### Keyboard driver {.unnumbered}
 
-The keyboard driver has a `so3virt_kbd_event` function, through which the frontend passes keyboard events to it. The function turns input events into UTF-8 characters. When it receives an event for a letter, it checks whether Shift is pressed and, if so, returns the matching uppercase letter.
+The keyboard driver has a `so3virt_kbd_event` function, through which the frontend passes keyboard events to it. The function turns input events into ASCII characters or, for control keys, into LittlevGL key codes, like the PL050 driver. When it receives an event for a letter, it checks whether Shift is pressed and, if so, returns the matching uppercase letter.
 
 When a key is released, its value is not cleared in `so3virt_kbd_event`, but only once an `ioctl` call has read it, so that the client has time to read the key. A more robust design would use a queue, from which the virtual driver would read events on each `ioctl` call.
 
@@ -617,7 +623,7 @@ Several fixes were tried, without success. First, various drivers were turned on
 
 After further investigation by Prof. Daniel Rossier, it seems the PCIe bus uses 64-bit addresses, while the OS is compiled for 32 bits. SOO would have to be compiled with LPAE (*Large Physical Address Extensions*) for the USB ports to work.
 
-The lack of USB support in SOO caused a second problem, with the touchscreens' input events. Although the USB cables powering the screens can be plugged into a nearby computer for testing, SOO then cannot receive the events sent over USB. A mouse or keyboard cannot be plugged in either.
+The lack of USB support in SOO caused a second problem, with the touchscreens' input events. Although the USB cables powering the screens can be plugged into a nearby computer for testing, SOO then cannot receive the events sent over USB. A mouse or keyboard cannot be plugged in either. The official display sends its touch events over DSI rather than USB, but SOO could not receive these either.
 
 As a result, input devices on the Pi 4 were not tested during this thesis.
 
@@ -657,7 +663,23 @@ void vinput_set_touch_bounds(struct input_absinfo *info)
 }
 ```
 
-These values are not sent to the frontend. Instead, the backend uses them in `vinput_pass_event` to scale `EV_ABS` events to the screen resolution. The frontend thus receives the event's screen coordinates directly, and passes them as they are to the virtual driver, which moves the pointer.
+These values are not sent to the frontend. Instead, the backend uses them in `vinput_pass_event` to rescale `EV_ABS` events to a fixed range, 0 to 10,000, whatever the touchscreen:
+
+```c
+if (type == EV_ABS && (code == ABS_X || code == ABS_Y))
+    value = 10000 * (value - min[code]) / (max[code] - min[code]);
+```
+
+The frontend passes this value as it is to the ME's virtual mouse driver, which converts it to pixels with the screen resolution it received through `SET_SIZE`. The backend thus needs no knowledge of the display:
+
+```c
+else if (type == EV_ABS) {
+    if (code == ABS_X)
+        state.x = value * res.h / 10000;
+    else if (code == ABS_Y)
+        state.y = value * res.v / 10000;
+}
+```
 
 ##### Touch events {.unnumbered}
 
