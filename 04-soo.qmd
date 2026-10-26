@@ -16,6 +16,8 @@ These virtual drivers still need to reach the hardware, whether to write to the 
 
 The backend and the frontend, of course, need to talk to each other. REDS implemented several mechanisms for this. VBStore, for example, lets the agency or an ME write and read a value at a given path. There is also the *shared ring*, which carries requests (initiated by the frontend) and responses (initiated by the backend).
 
+A few more terms recur in this chapter. Each domain is identified by a number, its *domain ID*. The *grant table* lets a domain give another domain access to some of its memory pages: the owner creates an entry for each page and passes the entry's number, the *grant reference*, to the other domain, which can then map the page. An *event channel* is a virtual interrupt line between two domains, which one side uses to notify the other, for instance that a ring holds new data. Finally, *vdummy* is a minimal backend and frontend pair kept in SOO as a template for new virtual interfaces.
+
 ![How Linux drivers, backends, frontends and virtual drivers fit together.](images/soo-architecture.svg){#fig-soo-architecture fig-alt="The agency, on top of the hardware, holds the Linux drivers, which feed a framebuffer backend and an input backend. Through VBStore and shared rings, each backend talks to its frontend in the ME: the framebuffer frontend serves the virtual framebuffer driver, and the input frontend serves the virtual keyboard and mouse drivers, which the ME's user space uses."}
 
 ## Handling multiple MEs {#sec-multiple-mes}
@@ -108,7 +110,9 @@ ME {
 };
 ```
 
-The backend and frontend are now compiled, and are initialized when the agency and the ME boot. The backend is always initialized before the frontend, since it is one of the agency's drivers, and the ME only starts once the agency is up. The vfb backend and frontend were not written from scratch: they are based on vdummy, which provides a working skeleton for new backends and frontends. Once `vdummy.c` is copied, every occurrence of *vdummy* is replaced by *vfb*, without forgetting the headers (`vdummy.h`).
+The backend and frontend are now compiled, and are initialized when the agency and the ME boot. The backend is always initialized before the frontend, since it is one of the agency's drivers, and the ME only starts once the agency is up. The vfb backend and frontend were not written from scratch: they are based on vdummy, which provides a working skeleton for new backends and frontends. Once `vdummy.c` is copied, every occurrence of *vdummy* is replaced by *vfb*, without forgetting the headers (`vdummy.h`). vdummy was itself rewritten in June 2020, in the middle of this work, and the vfb had to be rebased on the new version.
+
+Before the design described below, two small experiments checked that the backend and frontend could communicate: first a character string passed from the ME to the agency through VBStore, then a first pixel set to `0x12345678` in the ME's framebuffer and read back in the agency through the grant table.
 
 ### Where the framebuffer lives {#sec-vfb-location}
 
@@ -251,7 +255,7 @@ The number of bits per pixel does not always map exactly to a number of bytes pe
 
 The number of bytes per pixel is currently fixed to four in the backend. If that ever changed, the value would have to be passed to the frontend through VBStore, like the resolution.
 
-Once the size is known, the frontend allocates the framebuffer's memory with `get_contig_free_pages`, which reserves a number of contiguous physical pages. These pages belong to no process and are never freed, which is very close to how the VRAM behaves.
+Once the size is known, the frontend allocates the framebuffer's memory with `get_contig_free_pages`, which reserves a number of contiguous physical pages. These pages belong to no process and are never freed, which is very close to how the VRAM behaves. They are taken from the ME's own memory, whose size is set in `so3virt.dts`; it had to grow from 16 to 20 and then 32 MB to make room for the framebuffer. A 1920×1080 screen would need 8 MB.
 
 ```c
 uint32_t fb_base, hres, vres, page_count;
@@ -337,6 +341,12 @@ As explained in @sec-multiple-mes, pressing Ctrl + A twice changes the active do
 This function changes the PL111's registers, in particular LCDUPBASE, so that it holds the physical address of the framebuffer to display. It does so by changing some values of the framebuffer's `fb_info` structure, then calling the `fb_set_par` operation, which writes the structure's new values into the controller's registers. Calling this operation, defined in `fb_info`, runs `clcdfb_set_par` and then `clcdfb_set_start`, which changes the registers.
 
 The `fb_info` value to change is the physical address of the framebuffer, `fb_info->fix.smem_start`. For consistency, the virtual address, `fb_info->screen_base`, is changed too.
+
+On this platform nothing is copied: the PL111 reads the active ME's pages directly, through their physical address, and switching domains only changes one register. @sec-rpi4-framebuffers shows that the Pi 4 does not allow this. A short video shows the switch between framebuffers.[^switch-video]
+
+The `fillfb` application displayed correctly in an ME as soon as the PL111 could be pointed at its framebuffer, at the end of June 2020 (@fig-soo-fillfb). The LittlevGL demo only ran in the ME in early July; the cause of the delay was not recorded.
+
+![`fillfb` running in the first ME (domain 2), displayed by the agency's PL111. `fillfb` puts red in the lowest byte of each pixel, so its red and blue bands come out swapped.](images/soo-fillfb.png){#fig-soo-fillfb fig-alt="A QEMU window showing three horizontal bands, blue, green and red, above a terminal where the console has switched to ME-1(2) and the fillfb command was run." width="70%"}
 
 To keep track of the physical and virtual addresses of the different framebuffers, a `vfb_domfb` structure was created. It represents a *domain framebuffer*, since it is used not only for the MEs but also for the agency. It holds:
 
@@ -456,7 +466,7 @@ Since Linux already has drivers for many input devices, there is no need to deal
 - `unsigned int code`: a code that identifies the event more precisely. For example, code 42 of type `EV_KEY` is the Left Shift key, and code 0 of type `EV_REL` is a mouse movement along the x axis.
 - `int value`: the value of the event. For a key, whether it was pressed or released; for a mouse movement, the distance moved.
 
-To get these events into the vinput backend, it is enough to change `input_event` so that it calls the backend's `vinput_pass_event` function, which forwards the event to the frontend.
+To get these events into the vinput backend, it is enough to change `input_event` so that it calls the backend's `vinput_pass_event` function, which forwards the event to the frontend. The call is placed at the top of `input_event`, before Linux's own handling, which carries on as before: while an ME is active, the agency's own input handlers still receive every event.
 
 ![Input events travel from the Linux drivers to the vinput backend.](images/vinput-events.svg){#fig-vinput-events fig-alt="The keyboard driver, the mouse driver and other Linux input drivers call input_event in input.c, which calls vinput_pass_event in the vinput backend, vinputback/vinput.c."}
 
@@ -467,6 +477,8 @@ The backend and frontend are created much like those of the framebuffer. They ar
 The main difference between vfb and vinput lies in how the backend and frontend communicate. For vfb, three VBStore properties were enough. VBStore is not suited to sending events, though, since the agency may produce them faster than the ME consumes them.
 
 A ring shared between the backend and the frontend is a better fit. The backend puts responses on the ring, and the frontend reads them whenever it likes. The backend notifies the frontend with an interrupt, much like the PL050 and input devices in general. In the same way, the frontend can put requests on the ring and notify the backend. A response does not imply a request: the two are independent.
+
+The frontend sets up the ring when it starts. It opens an event channel, allocates a page for the ring and grants the agency access to it, then publishes the grant reference and the channel number in VBStore, as `ring-ref` and `ring-evtchn`. The backend reads them in `vinput_reconfigured`, maps the page, and binds the event channel to its interrupt handler.
 
 vinput only needs responses, since input events only flow from the backend to the frontend. A response is a structure, and the `vinput_response_t` structure was declared to carry input events:
 
@@ -595,7 +607,7 @@ Deploying SOO on the Raspberry Pi 4[^rpi4] is one of the goals of this thesis. I
 
 ### Touchscreens {#sec-touchscreens}
 
-REDS bought three touchscreens to test on the Pi 4 and to compare their differences, in particular their size and resolution, and how they connect to the Pi 4 (HDMI or DSI). After researching and comparing many screens, the ones chosen are listed in @tbl-touchscreens.
+REDS bought three touchscreens to test on the Pi 4 and to compare their differences, in particular their size and resolution, and how they connect to the Pi 4 (HDMI or DSI). After researching and comparing many screens, the ones chosen are listed in @tbl-touchscreens. The official display was the safest choice but has a low resolution; the 52Pi screen offers a higher resolution at the same size; and Waveshare was the only maker of a 10.1" screen among those considered.
 
 | Screen                                    | Size  | Resolution        | Video | Power             |
 |:------------------------------------------|:------|:------------------|:------|:------------------|
@@ -717,6 +729,8 @@ hdmi_mode=27
 
 A mode is a resolution and refresh rate. If the desired resolution has no mode, a custom mode must be created with `hdmi_cvt`, giving the resolution and refresh rate by hand, as done for the 52Pi screen.
 
+Nowhere in SOO is the resolution written in the code: on QEMU it comes from the PL111 node of the DTS, on the Pi 4 from `config.txt`. The backend reads it from the `fb_info` structure and passes it to the ME, and the demo asks the virtual driver for it with `ioctl`, so LittlevGL no longer needs recompiling when the screen changes. Standalone SO3 still takes its resolution from `pl111.c`. The procedure is described in the SOO wiki.[^soo-resolution]
+
 #### Creating the framebuffer {.unnumbered}
 
 The Pi 4's framebuffer is handled by a multimedia processor called *VideoCore*, made by Broadcom. Documentation for this processor is extremely scarce, especially for version 6, which is very different from the version 4 found on the Raspberry Pi 3.[^videocore]
@@ -802,3 +816,5 @@ Although this approach is only used on the Pi 4 for now, it would also work with
 [^waveshare]: <https://www.waveshare.com/10.1inch-HDMI-LCD-B-with-case.htm>
 [^config-txt]: <https://www.raspberrypi.com/documentation/computers/config_txt.html>
 [^videocore]: <https://en.wikipedia.org/wiki/VideoCore>
+[^switch-video]: <https://i.imgur.com/8BhM4QR.mp4>
+[^soo-resolution]: <https://gitlab.com/smartobject/soo/-/wikis/Changing-the-display-resolution>
