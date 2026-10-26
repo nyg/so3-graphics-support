@@ -20,6 +20,7 @@ book:
     - 05-conclusion.qmd
   appendices:
     - a1-specification.qmd
+    - a2-revision.qmd
 
 lang: en
 preserve-tabs: true

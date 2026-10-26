@@ -1,0 +1,27 @@
+# How this edition was revised {#sec-revision}
+
+In October 2026, this edition was fact-checked with the help of Claude, an AI model made by Anthropic, working at my request in Claude Code. Claude compared every checkable statement of the book with the primary sources of the thesis, and proposed corrections and additions. I reviewed each proposal and decided which ones to apply; the text was then edited accordingly.
+
+## Sources
+
+The book was checked against:
+
+- the code of the thesis: the 93 commits of the three branches it produced, `2-graphics` in SO3 and `5-soo-me-graphics` and `17-soo-graphics` in SOO, and the final state of every file they touch;
+- the minutes of the 18 weekly meetings with my supervisor, the two forum threads where I logged my progress, and the three GitLab issues tied to the branches;
+- the original French report, to tell translation errors from errors already present in 2020;
+- the technical references the thesis relies on: ARM's PL111 manual, the device trees of the Versatile Express in SOO's Linux, and the QEMU 5.0 source code emulating the Versatile Express, the PL111 and the PL050.
+
+## Findings
+
+The check found 31 statements that were wrong, imprecise or incomplete. All but one were already in the French original; one was introduced by the translation. The most significant:
+
+- The PL050's transmit interrupt is disabled, not enabled (the translation error).
+- The touchscreen coordinates are rescaled by the agency to a fixed range and converted to pixels in the ME, not the other way round.
+- The vfb and vinput backends replaced older backends that already existed in SOO; they were not created from scratch.
+- The Versatile Express has 8 MB of video RAM in a 32 MB address window, not 32 MB of video RAM, and the PL111 needs its framebuffer address aligned on eight bytes, not four.
+
+It also found 32 points that the sources document but the book left out or under-explained, such as how SO3 binds drivers to the device tree, why the agency maps a whole ME framebuffer from a single grant reference, and what works on each platform. Most of them were added, along with a summary of the results, the limitations and future work in @sec-conclusion.
+
+## What did not change
+
+The revision only touches the book. The code, the design and the results it describes are those of 2020. The French LaTeX and Sphinx editions were left as they are, and still contain the errors corrected here.
