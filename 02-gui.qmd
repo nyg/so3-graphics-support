@@ -6,7 +6,7 @@ The graphics library chosen for this work is LittlevGL, an open-source library w
 
 ![An example GUI, as shown on the LittlevGL website.](images/lvgl-example.png){#fig-lvgl-example fig-alt="A dark-themed LittlevGL interface with tabs, a calendar and a login form."}
 
-At first, the plan was to use this library only as a stepping stone towards a more complete one such as Qt or GTK. Given LittlevGL's many features, its thorough documentation and its active community, it was kept until the end of the thesis instead.
+At the start of the thesis, the goal was a Qt interface, with piloting a drone from a touchscreen as the guiding example. Qt, however, would have required adapting the system calls of SO3's C library, since SO3 applications are built with the standard `arm-linux-gnueabihf` toolchain. Prof. Rossier therefore suggested LittlevGL, at first only as a stepping stone towards a more complete library such as Qt or GTK. Given LittlevGL's many features, its thorough documentation and its active community, it was kept until the end of the thesis instead. In early April 2020, Qt was dropped from the plan, as was a task to secure the system with ARM TrustZone, in favor of bringing the work to SOO.
 
 With the release of version 7 in May 2020, the project was renamed LVGL (*Light and Versatile Graphics Library*). This book keeps the name LittlevGL, because version 6.1.2 (February 2020) is the one integrated into SO3.
 
@@ -57,6 +57,8 @@ out/%.elf: src/%.o $(LIBC_DIR)/$(NLIB) $(LVGL_DIR)/$(LVGL_LIB)
 $(LVGL_DIR)/$(LVGL_LIB):
 	make -C lvgl all
 ```
+
+One pitfall: SO3's `.gitignore` excludes `*.mk` files, so LittlevGL's Makefile fragments had to be added to the repository explicitly, and they went missing twice along the way.
 
 Any SO3 application can now use LittlevGL simply by including `lvgl/lvgl.h`. @fig-build gives an overview of the whole build.
 
@@ -109,7 +111,7 @@ void *tick_routine(void *args)
 
 Two other pieces are essential. The first is a thread that tells LittlevGL, at regular intervals, how much time has passed, by calling the library's `lv_tick_inc` function.[^tick] This is how the library knows when to run animations and tasks, such as reading the mouse coordinates. The second is a call to `lv_task_handler` every 5 milliseconds, the interval LittlevGL recommends. This function runs tasks defined either by the library, such as redrawing the parts of the interface that changed, or by the developer, though this application defines none.[^task-handler]
 
-![A LittlevGL application and how it interacts with SO3.](images/lvgl-app.svg){#fig-lvgl-app fig-alt="The LittlevGL application in user space uses LittlevGL and the C library. Through the C library, it reaches the framebuffer driver and the input drivers in the kernel. The framebuffer driver drives the display, and the input drivers receive events from the keyboard, mouse and touchscreen."}
+![A LittlevGL application and how it interacts with SO3.](images/lvgl-app.svg){#fig-lvgl-app fig-alt="The LittlevGL application in user space uses LittlevGL and the C library. Through the C library, it reaches the framebuffer driver and the input drivers in the kernel. The framebuffer driver drives the display, and the input drivers receive events from the keyboard and mouse."}
 
 ### Displaying the interface {#sec-lvgl-display}
 
@@ -117,7 +119,7 @@ Two other pieces are essential. The first is a thread that tells LittlevGL, at r
 
 To display the GUI that LittlevGL generates, the user space of SO3 needs a way to access the framebuffer and write to it.
 
-The framebuffer is a region of memory[^framebuffer] into which pixels are written. A dedicated device controller, a hardware circuit, manages it. The controller is configured to decide how pixels are laid out in memory: the number of bits per color, the order of the colors, and so on.
+As defined in @sec-choosing-littlevgl, the framebuffer is a region of memory[^framebuffer] holding the pixels shown on screen. A dedicated device controller, a hardware circuit, manages it. The controller is configured to decide how pixels are laid out in memory: the number of bits per color, the order of the colors, and so on.
 
 With 24 bits per pixel (*bpp*), for example, 8 bits each for red, green and blue, more than 16 million colors can be shown. Each pixel then takes four bytes. The first byte is either ignored or used for opacity, and the other three are read as RGB or BGR (red and blue swapped), depending on how the controller is configured.
 
@@ -153,7 +155,7 @@ This is the POSIX form. SO3's `mmap` ignores the protection and flag arguments, 
 
 In LittlevGL's terminology, a *driver* is a C structure that enables a feature. Each driver has one or more *callback* functions attached, which the library calls when needed.
 
-The display driver,[^display] for example, must be given a buffer that LittlevGL uses to draw the interface. It also needs a callback that copies this buffer into the framebuffer. If the buffer is smaller than the screen, the interface is drawn in several passes, so there is a trade-off between memory use and CPU use. Either way, LittlevGL only redraws the parts of the interface that changed.
+The display driver,[^display] for example, must be given a buffer that LittlevGL uses to draw the interface. It also needs a callback that copies this buffer into the framebuffer. If the buffer is smaller than the screen, the interface is drawn in several passes, so there is a trade-off between memory use and CPU use. The demo gives it 256 × 256 pixels, or 256 KB at 4 bytes per pixel, about a twelfth of a 1024×768 screen. Either way, LittlevGL only redraws the parts of the interface that changed.
 
 LittlevGL can also be given a second buffer, so that drawing the interface and copying it to the framebuffer happen in parallel. This only pays off if the copy is done by hardware, such as a direct memory access (DMA) controller, while the CPU draws the next frame. SO3 has no driver for such hardware, so a single buffer was used.
 
@@ -319,6 +321,8 @@ lv_fs_res_t fs_read_cb(struct _lv_fs_drv_t *drv,
 }
 ```
 
+The `seek` and `tell` callbacks matter in practice: LittlevGL reads an image again whenever part of it must be redrawn, for instance after the pointer passes over it. SO3 had no matching functions at first, so an image was drawn correctly once but not redrawn properly. Prof. Rossier then implemented `fseek` and `ftell` in SO3, and the callbacks were rewritten on top of `fopen`, `fread`, `fseek` and `ftell` instead of the lower-level `open` and `read`.
+
 @fig-lvgl-drivers shows how the LittlevGL drivers described above interact with the SO3 kernel. The kernel side, with SO3's drivers and its virtual file system, is the subject of @sec-so3.
 
 ![LittlevGL's drivers and how they reach the SO3 kernel through the C library.](images/lvgl-drivers.svg){#fig-lvgl-drivers fig-alt="Inside the LittlevGL application, the display driver, the mouse and keyboard input drivers and the file system driver each go through the C library, using open, mmap and ioctl, to reach their kernel counterpart: the framebuffer driver, the mouse driver, the keyboard driver and the virtual file system. The input and file system drivers feed the display driver."}
@@ -327,7 +331,7 @@ lv_fs_res_t fs_read_cb(struct _lv_fs_drv_t *drv,
 
 The code excerpts above come from a demo application, written to showcase LittlevGL's features but above all to check that the changes made to SO3 work. It lives in `usr/src/demo.c`.
 
-Its interface (@fig-demo-1 and @fig-demo-2) has three tabs and is based on LittlevGL's demo code from GitHub.[^lv-examples] The rest of the application was written specifically for SO3.
+Its interface (@fig-demo-1 and @fig-demo-2) has three tabs and is based on LittlevGL's demo code from GitHub.[^lv-examples] The rest of the application was written specifically for SO3. A video of the demo running in QEMU is available online.[^demo-video]
 
 ![The first tab of the demo application, running in QEMU, with buttons, sliders, a list and an image loaded from the file system.](images/demo-1.png){#fig-demo-1 fig-alt="The first tab of the demo application in a QEMU window, showing buttons, the REDS logo, switches, sliders, check boxes, a list and a table."}
 
@@ -345,3 +349,4 @@ Its interface (@fig-demo-1 and @fig-demo-2) has three tabs and is based on Littl
 [^fs]: <https://docs.lvgl.io/6.1/overview/file-system.html>
 [^musl]: <https://musl.libc.org>
 [^lv-examples]: <https://github.com/lvgl/lv_examples/blob/release/v6/lv_tests/lv_test_theme/lv_test_theme_1.c>
+[^demo-video]: <https://www.youtube.com/watch?v=skn_mp3ZBhI>

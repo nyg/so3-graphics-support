@@ -21,8 +21,7 @@
   <rect class="node" x="20" y="92" width="180" height="48" rx="8"/>
   <text x="110" y="121">Display</text>
   <rect class="node" x="20" y="172" width="180" height="48" rx="8"/>
-  <text x="110" y="192">Keyboard, mouse,</text>
-  <text x="110" y="210">touchscreen</text>
+  <text x="110" y="201">Keyboard, mouse</text>
 
   <rect class="system" x="236" y="16" width="608" height="258" rx="10"/>
   <text class="title" x="252" y="40">SO3</text>
