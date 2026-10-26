@@ -440,6 +440,68 @@ section.footnotes {
   }
 }
 
+#quarto-sidebar .sidebar-source {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  margin-bottom: 1.5rem;
+  font-size: 0.8rem;
+  color: $ink-faint;
+  text-decoration: none;
+
+  .bi {
+    font-size: 0.95rem;
+  }
+
+  &:hover {
+    color: $ink-strong;
+  }
+}
+
+#quarto-sidebar .sidebar-item:not(.sidebar-item-section) .menu-text {
+  display: block;
+  padding-left: 1.6rem;
+}
+
+#quarto-sidebar .sidebar-item .menu-text:has(.chapter-number) {
+  display: flex;
+  padding-left: 0;
+  font-size: 0;
+
+  > * {
+    font-size: 0.86rem;
+  }
+
+  .chapter-number {
+    flex: 0 0 1.6rem;
+  }
+
+  .chapter-title {
+    flex: 1;
+  }
+}
+
+#quarto-sidebar .sidebar-section {
+  padding-left: 0;
+}
+
+.tippy-box[data-theme~="quarto"] {
+  background: $surface;
+  border: 1px solid $rule-strong;
+  border-radius: 10px;
+  box-shadow: 0 1px 2px rgba($ink, 0.06), 0 12px 32px -6px rgba($ink, 0.2);
+
+  .tippy-content {
+    padding: 0.9rem 1.1rem;
+  }
+}
+
+main.content .tippy-box[data-theme~="quarto"] section.level2 > h2 {
+  margin-top: 1.25rem;
+  padding-top: 0;
+  border-top: 0;
+}
+
 #quarto-search .aa-Form {
   background: $surface;
   border: 1px solid $rule;
