@@ -4,6 +4,42 @@ Adding graphics support to SO3 called for research at several levels of operatin
 
 A lot was also learned about the components of SOO, such as the AVZ hypervisor, shared rings, VBStore, and backend and frontend drivers, along with a basic understanding of how Linux drivers work. This thesis was also an introduction to embedded systems and the many possibilities they offer.
 
-More work is still needed before a user can interact with a Raspberry Pi 4 through a touchscreen alone. USB support must be implemented, and touch events must be tested in real conditions. The SOO.refso3 ME could also be improved in various ways, for example with a more robust keyboard driver that supports both UTF-8 characters and keyboard shortcuts defined by the application.
+## Results {#sec-results}
+
+@tbl-results sums up what works on each of the three setups used during the thesis.
+
+| Feature                    | SO3 on QEMU | SOO on QEMU | SOO on the Pi 4                  |
+|:---------------------------|:------------|:------------|:---------------------------------|
+| Display                    | Works       | Works       | Works on all three screens       |
+| Mouse and keyboard         | Works       | Works       | Not tested: no USB support       |
+| Switching between domains  | —           | Works       | Works, through the copy thread   |
+| Touch                      | —           | —           | Written, not tested              |
+
+: What works on each setup. A dash marks a feature that does not apply. {#tbl-results tbl-colwidths="[28,18,18,36]"}
+
+## Limitations {#sec-limitations}
+
+Several shortcuts were taken, some of them described in the previous chapters:
+
+- All MEs share a single resolution, that of the agency's framebuffer.
+- Every framebuffer is assumed to use 4 bytes per pixel.
+- The keyboard drivers only keep the last key, with no queue, and only know the Swiss layout.
+- The PL050 keyboard driver keeps only the first two bytes of each sequence, so the release of an extended key, such as an arrow, is decoded from a byte that was never received.
+- Linux's framebuffer console must stay disabled in the agency (@sec-vfb-display).
+- Each ME's memory must be large enough to hold its framebuffer.
+- On the Pi 4, the copy thread copies the whole screen every 50 ms, about 50 MB/s at 1024×600, even when nothing changes.
+- The Pi 4's USB ports do not work under SOO, so no input device could be used there.
+
+## Future work {#sec-future-work}
+
+More work is still needed before a user can interact with a Raspberry Pi 4 through a touchscreen alone. USB support must be implemented, which likely requires building SOO with LPAE, and touch events must be tested in real conditions. The SOO.refso3 ME could also be improved in various ways, for example with a more robust keyboard driver that supports both UTF-8 characters and keyboard shortcuts defined by the application.
+
+Several smaller improvements came up during the thesis:
+
+- Upgrading to LittlevGL 7, renamed LVGL, which Prof. Rossier considered a must.
+- Changing the resolution at runtime, which LittlevGL already allows in version 6, instead of fixing it when the application starts.
+- Adding a `write` operation to the framebuffer drivers, so that the pixel format is handled in the kernel rather than in each application.
+- Unlinking Linux's framebuffer console from the framebuffer before changing its address, with `unlink_framebuffer`, so that the console no longer needs to be disabled.
+- On the Pi 4, exploring the VideoCore's mailbox interface, which might allow changing the framebuffer's address and removing the copy thread.
 
 Finally, real applications remain to be written, in areas such as home automation, collaborative displays or drone control. For this, the ME developed so far must actually migrate, and interact with other MEs.
