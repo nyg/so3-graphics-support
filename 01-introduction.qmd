@@ -10,6 +10,8 @@ The goal of this thesis is therefore to add graphics support to SO3. This means 
 
 The second stage is to make this GUI work inside an ME based on the modified SO3. When the ME is virtualized, only SOO talks to the hardware, never the ME itself. For the ME to reach the hardware anyway, virtual interfaces must be implemented, one to display the GUI and one to support input devices. Development starts in an emulated environment (QEMU) and is then adapted to run on a Raspberry Pi 4.
 
+@sec-gui introduces the graphics library and what an application needs from the OS to use it. @sec-so3 describes the changes made to SO3: device files, `mmap`, and the framebuffer, mouse and keyboard drivers. @sec-soo brings this work to SOO, with virtual framebuffer and input interfaces between the agency and the MEs, then the port to the Raspberry Pi 4. @sec-conclusion sums up the results, the limitations and what remains to be done. @sec-specification reproduces the specification of the thesis.
+
 [^reds]: Reconfigurable & Embedded Digital Systems.
 [^soo]: <https://blog.reds.ch/?p=1020> and <https://github.com/smartobjectoriented/soo>
 [^so3-repo]: <https://github.com/smartobjectoriented/so3>
